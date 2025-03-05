@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free VBUCKS/ROBUX</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            flex-direction: column;
+        }
+        .button {
+            padding: 15px 30px;
+            font-size: 20px;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+        .loading-bar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+            display: none;
+        }
+        .loading-bar-fill {
+            height: 20px;
+            background-color: #28a745;
+            width: 0;
+        }
+        .text, .final-text {
+            font-size: 18px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Get Free VBUCKS/ROBUX</h1>
+    <button class="button" onclick="startLoading()">GET YOUR VBUCKS/ROBUX NOW</button>
+    <div class="text">Click the button to start the process.</div>
+    <div class="loading-bar" id="loadingBar">
+        <div class="loading-bar-fill" id="loadingBarFill"></div>
+    </div>
+    <div class="text hidden" id="loadingText"></div>
+    <div class="final-text hidden" id="finalText">
+        If you still here then your browser probably blocked the pop-out and you're lucky.
+    </div>
+    <button class="button hidden" id="hubButton" onclick="location.href='hub.html'">Go to Hub</button>
 
+    <script>
+        function startLoading() {
+            document.getElementById('loadingBar').style.display = 'block';
+            document.getElementById('loadingText').classList.remove('hidden');
+            const loadingBarFill = document.getElementById('loadingBarFill');
+            const loadingText = document.getElementById('loadingText');
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    openVideos();
+                    document.getElementById('finalText').classList.remove('hidden');
+                    document.getElementById('hubButton').classList.remove('hidden');
+                    document.getElementById('loadingText').classList.add('hidden');
+                } else {
+                    width++;
+                    loadingBarFill.style.width = width + '%';
+                    loadingText.textContent = `GETTING YOUR FREE CURRENCY: Estimated ${(10 - (width / 10)).toFixed(1)} seconds`;
+                }
+            }, 100); // 100ms * 100 = 10 seconds
+        }
+
+        function openVideos() {
+            const videoURL = 'https://www.youtube.com/shorts/tzD9OxAHtzU';
+            for (let i = 0; i < 5; i++) {
+                window.open(videoURL, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>
