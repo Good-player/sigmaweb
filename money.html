@@ -3,32 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money clicker</title>
+    <title>Money Clicker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin-top: 50px;
         }
-        #clickButton {
+        #clickButton, .options-button, .button {
             padding: 20px;
             font-size: 20px;
             cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        #clickButton:hover, .options-button:hover, .button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
         }
         #counter {
             font-size: 24px;
             margin-top: 20px;
         }
+        .description {
+            margin-top: 10px;
+            font-size: 16px;
+        }
         .options-button {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
         }
         .options-menu {
             display: none;
@@ -73,6 +82,133 @@
     <h1>Clicker Game</h1>
     <button id="clickButton">Click me!</button>
     <div id="counter">Clicks: 0</div>
+    <button id="upgradeButton" class="button">Upgrade Click (Cost: 10)</button>
+    <div class="description">Increase your click power by 3 for each upgrade.</div>
+    <button id="botButton" class="button">Buy Clicker Bot (Cost: 100)</button>
+    <div class="description">Buy a bot that clicks automatically, half of the user click upgrades per second.</div>
+    <div id="upgradeCount">Upgrades: 0</div>
+    <div id="botCount">Bots: 0</div>
+    <button class="options-button" onclick="toggleOptionsMenu()">Options</button>
+
+    <div class="options-menu" id="optionsMenu">
+        <button onclick="openCheatWindow()">Cheat</button>
+        <button onclick="location.href='hub.html'">Quit game (Back to hub)</button>
+        <button onclick="closeOptionsMenu()">Close window</button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeCheatWindow()"></div>
+    <div class="cheat-window" id="cheatWindow">
+        <h2>PLEASE CONFIG CHEAT HERE!</h2>
+        <label for="cheatOption">Choose Cheat:</label>
+        <select id="cheatOption">
+            <option value="clicks">Clicks</option>
+            <option value="upgradeCost">Upgrade Cost</option>
+            <option value="botCost">Bot Cost</option>
+            <option value="clickValue">Click Value</option>
+        </select><br><br>
+        <label for="cheatValue">Enter Value:</label>
+        <input type="text" id="cheatValue"><br><br>
+        <button onclick="saveCheat()">Save</button>
+        <button onclick="closeCheatWindow()">Close</button>
+    </div>
+
+    <script>
+        let count = 0;
+        let clickValue = 1;
+        let upgradeCost = 10;
+        let botCost = 100;
+        let upgrades = 0;
+        let bots = 0;
+
+        const clickButton = document.getElementById('clickButton');
+        const counter = document.getElementById('counter');
+        const upgradeButton = document.getElementById('upgradeButton');
+        const botButton = document.getElementById('botButton');
+        const upgradeCount = document.getElementById('upgradeCount');
+        const botCount = document.getElementById('botCount');
+
+        clickButton.addEventListener('click', () => {
+            count += clickValue;
+            counter.textContent = 'Clicks: ' + count;
+        });
+
+        upgradeButton.addEventListener('click', () => {
+            if (count >= upgradeCost) {
+                count -= upgradeCost;
+                clickValue += 3;
+                upgradeCost = Math.floor(upgradeCost * 1.5);
+                upgrades++;
+                counter.textContent = 'Clicks: ' + count;
+                upgradeButton.textContent = 'Upgrade Click (Cost: ' + upgradeCost + ')';
+                upgradeCount.textContent = 'Upgrades: ' + upgrades;
+            }
+        });
+
+        botButton.addEventListener('click', () => {
+            if (count >= botCost) {
+                count -= botCost;
+                bots++;
+                botCost = Math.floor(botCost * 1.5);
+                botButton.textContent = 'Buy Clicker Bot (Cost: ' + botCost + ')';
+                botCount.textContent = 'Bots: ' + bots;
+            }
+        });
+
+        setInterval(() => {
+            count += bots * Math.floor(clickValue / 2);
+            counter.textContent = 'Clicks: ' + count;
+        }, 1000);
+
+        function toggleOptionsMenu() {
+            var menu = document.getElementById('optionsMenu');
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        function closeOptionsMenu() {
+            document.getElementById('optionsMenu').style.display = 'none';
+        }
+
+        function openCheatWindow() {
+            document.getElementById('cheatWindow').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closeCheatWindow() {
+            document.getElementById('cheatWindow').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function saveCheat() {
+            var cheatOption = document.getElementById('cheatOption').value;
+            var cheatValue = parseInt(document.getElementById('cheatValue').value);
+            switch (cheatOption) {
+                case 'clicks':
+                    count = cheatValue;
+                    counter.textContent = 'Clicks: ' + count;
+                    break;
+                case 'upgradeCost':
+                    upgradeCost = cheatValue;
+                    upgradeButton.textContent = 'Upgrade Click (Cost: ' + upgradeCost + ')';
+                    break;
+                case 'botCost':
+                    botCost = cheatValue;
+                    botButton.textContent = 'Buy Clicker Bot (Cost: ' + botCost + ')';
+                    break;
+                case 'clickValue':
+                    clickValue = cheatValue;
+                    break;
+                default:
+                    console.error('Unknown cheat option');
+            }
+            closeCheatWindow();
+        }
+    </script>
+</body>
+</html>0</div>
     <button id="upgradeButton" class="upgrade-button">Upgrade Click (Cost: 10)</button>
     <div class="description">Increase your click power by 3 for each upgrade.</div>
     <button id="botButton" class="bot-button">Buy Clicker Bot (Cost: 100)</button>
