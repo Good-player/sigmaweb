@@ -1,28 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-<html>
-  <head>
-    <title>reCAPTCHA demo: Simple page</title>
-    <link rel="icon" href="icon.png" type="image/png">
-    <script src="https://www.google.com/recaptcha/enterprise.js" async defer></script>
-  </head>
-  <body>
-    <h1>Welcome to my skibidi sigma website</h1>
-    <p>This is my first website ever created lol.</p>
-    <form action="" method="POST">
-      <div class="g-recaptcha" data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE" data-action="LOGIN"></div>
-      <br/>
-      <input type="submit" value="Submit">
-    </form>
-  </body>
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Good Player</title>
+    <title>reCAPTCHA Form</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        #submitBtn {
+            background-color: grey;
+            pointer-events: none;
+        }
+    </style>
 </head>
+    <h1>Welcome to my skibidi sigma website</h1>
+    <p>This is my first website ever created lol.</p>
+    <p>You need to done your sigma test in recaptcha and click submit.</p>
+
+
+
+
 <body>
-    <h1>Welcome to Good Player</h1>
-    <!-- Button to redirect to money.html -->
-    <button onclick="window.location.href='money.html'">Go to Money Page</button>
+    <form id="recaptcha-form" action="hub.html">
+        <div class="g-recaptcha" data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE" data-callback="recaptchaCallback" data-expired-callback="recaptchaExpired"></div>
+        <button id="submitBtn" type="submit">Submit</button>
+    </form>
+    <script>
+        function recaptchaCallback(response) {
+            if (response) {
+                document.getElementById('submitBtn').style.backgroundColor = 'green';
+                document.getElementById('submitBtn').style.pointerEvents = 'auto';
+            }
+        }
+
+        function recaptchaExpired() {
+            document.getElementById('submitBtn').style.backgroundColor = 'grey';
+            document.getElementById('submitBtn').style.pointerEvents = 'none';
+        }
+
+        document.getElementById('recaptcha-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                // reCAPTCHA not completed
+                window.location.href = 'robotalert.html';
+            } else {
+                // reCAPTCHA completed
+                fetch('https://www.google.com/recaptcha/api/siteverify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `secret=your-secret-key&response=${recaptchaResponse}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = 'hub.html';
+                    } else {
+                        window.location.href = 'robotalert.html';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
