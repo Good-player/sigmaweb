@@ -1,42 +1,50 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hub</title>
     <link rel="icon" href="pic/icon.png" type="image/png">
     <style>
-        .top-right-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #e0f7fa;
+            margin: 0;
+        }
+        .button {
             padding: 15px 30px;
-            background-color: #ff4c4c;
+            font-size: 20px;
             color: white;
-            font-size: 16px;
+            background-color: #0288d1;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .button:hover {
+            background-color: #0277bd;
+            transform: translateY(-2px);
+        }
+        .description {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #555;
         }
     </style>
 </head>
 <body>
-    <button class="top-right-button" onclick="location.href='index.html'">Main menu</button>
-</body>
-</html>
-
-
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub</title>
-</head>
-<body>
     <h1>Welcome to the Hub</h1>
-    <p>Click the button below to play the clicker game.</p>
-    <button onclick="window.location.href='money.html'">Go to Money</button>
+    <button class="button" onclick="location.href='index.html'">Main menu</button>
+    <div class="description">Click the button below to play the clicker game.</div>
+    <button class="button" onclick="location.href='money.html'">Money Clicker Game</button>
+    <div class="description">Click the button below to get free VBUCKS/ROBUX.</div>
+    <button class="button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
 </body>
-    <body>
-            <a href="hub.html">Back to hub</a>
-    <script>
 </html>
