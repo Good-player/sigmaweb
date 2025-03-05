@@ -37,37 +37,38 @@
             font-size: 18px;
             color: #555;
         }
+        .update-log {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <h1>Welcome to the Hub</h1>
-    <button class="button" onclick="location.href='index.html'">Quit</button>
-    <div class="description">Rage quit/logout</div>
+    <button class="button" onclick="location.href='index.html'">Main menu</button>
+    <div class="description">Click the button below to play the clicker game.</div>
     <button class="button" onclick="location.href='money.html'">Money Clicker Game</button>
-    <div class="description">A game that clicking and buy upgrades.</div>
+    <div class="description">Click the button below to get free VBUCKS/ROBUX.</div>
     <button class="button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
-    <div class="description">A surely sigma website that get free robux/Vbucks. *jk</div>
+    <div class="update-log" id="updateLog">
+        <h2>Update Log</h2>
+        <pre id="logContent">Loading...</pre>
+    </div>
+    <script>
+        fetch('blog.txt')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('logContent').textContent = data;
+            })
+            .catch(error => {
+                document.getElementById('logContent').textContent = 'Error loading update log.';
+                console.error('Error fetching update log:', error);
+            });
+    </script>
 </body>
 </html>
-
-
-
-<!-- Link to redirect to the GitHub repository -->
-<a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my github thing or idk</a>
-
-<style>
-    /* CSS to position the link at the bottom center of the page */
-    #repoLink {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        text-decoration: none;
-        color: blue;
-        font-size: 16px;
-    }
-
-    #repoLink:hover {
-        text-decoration: underline;
-    }
-</style>
