@@ -8,25 +8,28 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
             background-color: #f0f0f0;
             margin: 0;
-            flex-direction: column;
         }
         .button {
             padding: 15px 30px;
             font-size: 20px;
             color: white;
-            background-color: #28a745;
+            background-color: #d32f2f;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.3s;
         }
         .button:hover {
-            background-color: #218838;
+            background-color: #c62828;
+            transform: translateY(-2px);
         }
         .loading-bar {
             width: 100%;
@@ -38,7 +41,7 @@
         }
         .loading-bar-fill {
             height: 20px;
-            background-color: #28a745;
+            background-color: #d32f2f;
             width: 0;
         }
         .text, .final-text {
@@ -53,7 +56,9 @@
 </head>
 <body>
     <h1>Get Free VBUCKS/ROBUX</h1>
-    <button class="button" onclick="startLoading()">GET YOUR VBUCKS/ROBUX NOW</button>
+    <p style="color:red;">WARNING: This is a scam!</p>
+    <button class="button" onclick="location.href='hub.html'">Back to Hub</button>
+    <button class="button" id="startButton" onclick="startLoading()">GET YOUR VBUCKS/ROBUX NOW</button>
     <div class="text">Click the button to start the process.</div>
     <div class="loading-bar" id="loadingBar">
         <div class="loading-bar-fill" id="loadingBarFill"></div>
@@ -65,7 +70,11 @@
     <button class="button hidden" id="hubButton" onclick="location.href='hub.html'">Go to Hub</button>
 
     <script>
+        let isLoading = false;
+
         function startLoading() {
+            if (isLoading) return;
+            isLoading = true;
             document.getElementById('loadingBar').style.display = 'block';
             document.getElementById('loadingText').classList.remove('hidden');
             const loadingBarFill = document.getElementById('loadingBarFill');
@@ -78,6 +87,7 @@
                     document.getElementById('finalText').classList.remove('hidden');
                     document.getElementById('hubButton').classList.remove('hidden');
                     document.getElementById('loadingText').classList.add('hidden');
+                    isLoading = false;
                 } else {
                     width++;
                     loadingBarFill.style.width = width + '%';
