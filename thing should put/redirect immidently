@@ -1,0 +1,4 @@
+<script>
+    // Script to immediately redirect to index.html
+    window.location.href = 'page1.html';
+</script>
