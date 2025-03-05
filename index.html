@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>reCAPTCHA Form</title>
+    <title>Good Player</title>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         #submitBtn {
@@ -12,15 +12,11 @@
         }
     </style>
 </head>
-    <h1>Welcome to my skibidi sigma website</h1>
-    <p>This is my first website ever created lol.</p>
-    <p>You need to done your sigma test in recaptcha and click submit.</p>
-
-
-
-
 <body>
-    <form id="recaptcha-form" action="hub.html">
+    <h1>Welcome to my skibidi sigma website</h1>
+    <label>This is my first website ever created lol.</label>
+    <label>You need to done your sigma test in recaptcha and click submit for go to our hub.</label>
+    <form id="recaptcha-form" action="hub.html" method="GET">
         <div class="g-recaptcha" data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE" data-callback="recaptchaCallback" data-expired-callback="recaptchaExpired"></div>
         <button id="submitBtn" type="submit">Submit</button>
     </form>
@@ -38,49 +34,30 @@
         }
 
         document.getElementById('recaptcha-form').addEventListener('submit', function(event) {
-            event.preventDefault();
             var recaptchaResponse = grecaptcha.getResponse();
             if (recaptchaResponse.length === 0) {
-                // reCAPTCHA not completed
+                event.preventDefault();
                 window.location.href = 'robotalert.html';
             } else {
-                // reCAPTCHA completed
-                fetch('https://www.google.com/recaptcha/api/siteverify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `secret=your-secret-key&response=${recaptchaResponse}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = 'hub.html';
-                    } else {
-                        window.location.href = 'robotalert.html';
-                    }
-                });
+                // Allow the form to be submitted normally
             }
         });
     </script>
+    <!-- Link to redirect to the GitHub repository -->
+    <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my github thing or idk</a>
+    <style>
+        #repoLink {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-decoration: none;
+            color: blue;
+            font-size: 16px;
+        }
+
+        #repoLink:hover {
+            text-decoration: underline;
+        }
+    </style>
 </body>
-<!-- Link to redirect to the GitHub repository -->
-<a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my github thing or idk</a>
-
-<style>
-    /* CSS to position the link at the bottom center of the page */
-    #repoLink {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        text-decoration: none;
-        color: blue;
-        font-size: 16px;
-    }
-
-    #repoLink:hover {
-        text-decoration: underline;
-    }
-</style>
-</html>
