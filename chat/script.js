@@ -33,6 +33,7 @@ function sendMessage() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('API Response:', data); // Debug log
         appendMessage('AI', data.reply);
     })
     .catch(error => {
