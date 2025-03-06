@@ -147,7 +147,6 @@
         }
         .back-button, .show-messages-button, .sigma-owner-button {
             padding: 12px;
-            background-color: #0288d1;
             color: white;
             border: none;
             border-radius: 5px;
@@ -157,14 +156,31 @@
             font-size: 16px;
             font-weight: bold;
         }
-        .back-button:hover, .show-messages-button:hover, .sigma-owner-button:hover {
-            background-color: #0277bd;
+        .back-button {
+            background-color: #d9534f; /* Red color for back button */
+        }
+        .back-button:hover {
+            background-color: #c9302c;
+            transform: translateY(-2px);
+        }
+        .show-messages-button {
+            background-color: #5bc0de; /* Blue color for show messages button */
+        }
+        .show-messages-button:hover {
+            background-color: #31b0d5;
+            transform: translateY(-2px);
+        }
+        .sigma-owner-button {
+            background-color: #5cb85c; /* Green color for sigma owner button */
+        }
+        .sigma-owner-button:hover {
+            background-color: #4cae4c;
             transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="location.href='index.html'">Back to Hub</button>
+    <button class="back-button" onclick="location.href='hub.html'">Back to Hub</button>
     <button class="show-messages-button" onclick="showMessages()">Show Messages</button>
     <button class="sigma-owner-button" onclick="authenticateAndEditPost()">Sigma owner?</button>
     <div class="container">
