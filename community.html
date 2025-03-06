@@ -112,12 +112,39 @@
 <body>
     <button class="back-button" onclick="location.href='index.html'">Back to Hub</button>
     <button class="show-messages-button" onclick="showMessages()">Show Messages</button>
-    <button class="sigma-owner-button" onclick="verifyOwner()">Sigma owner?</button>
+    <button class="sigma-owner-button" onclick="authenticateAndEditPost()">Sigma owner?</button>
     <div class="container">
         <h1>Community</h1>
-        <a href="AKfycbwaZgbY_fiYvPmwfrckic6iHxljCkJQZnN7vqMqklNd_fqd4gCCMLnY4E3hnasz-_ReIg" target="_blank">Create a Post</a>
         <div id="postsContainer"></div>
     </div>
     <a href="https://github.com/Good-player/Good-player-github.io">Link to the Repository</a>
+
+    <script>
+        function authenticateAndEditPost() {
+            const clientId = 'YOUR_GITHUB_CLIENT_ID';
+            const redirectUri = encodeURIComponent('https://good-player.github.io/auth/github/callback');
+            const scope = encodeURIComponent('repo user');
+            const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+            window.location.href = githubAuthUrl;
+        }
+
+        // After authentication, capture the code from the redirect URL and send it to your server
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (code) {
+            fetch('/auth/github/callback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code }),
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.username === 'Good-player') {
+                      // Show delete/edit buttons
+                  }
+              });
+        }
+    </script>
 </body>
 </html>
