@@ -1,5 +1,5 @@
 function authenticateAndEditPost() {
-    window.location.href = 'https://github.com/login/oauth/authorize?client_id=YOUR_GITHUB_CLIENT_ID&scope=repo';
+    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liBR9DzXII9XGVyn&scope=repo';
 }
 
 // After authentication, capture the code from the redirect URL and send it to your server
