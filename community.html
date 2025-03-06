@@ -3,9 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>In Development</title>
+    <title>Community</title>
+    <link rel="icon" href="pic/icon.png" type="image/png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .post-form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .post-form input, .post-form textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .post-form button {
+            padding: 10px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .post-form button:hover {
+            background-color: #0277bd;
+        }
+        .post {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .post:last-child {
+            border-bottom: none;
+        }
+        .post-time, .post-country, .post-username {
+            font-size: 12px;
+            color: gray;
+        }
+        .back-button, .show-messages-button, .sigma-owner-button {
+            padding: 10px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .back-button:hover, .show-messages-button:hover, .sigma-owner-button:hover {
+            background-color: #0277bd;
+        }
+        .like-button, .details-button, .comment-button, .delete-button, .edit-button {
+            padding: 5px 10px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .like-button:hover, .details-button:hover, .comment-button:hover, .delete-button:hover, .edit-button:hover {
+            background-color: #45a049;
+        }
+        .comments {
+            margin-top: 10px;
+            padding-left: 20px;
+            border-left: 2px solid #ccc;
+        }
+        .comment {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .bubble-effect {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: red;
+            border-radius: 50%;
+            animation: bubble 0.5s ease-out forwards;
+        }
+        @keyframes bubble {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-    <p>In development</p>
+    <button class="back-button" onclick="location.href='index.html'">Back to Hub</button>
+    <button class="show-messages-button" onclick="showMessages()">Show Messages</button>
+    <button class="sigma-owner-button" onclick="verifyOwner()">Sigma owner?</button>
+    <div class="container">
+        <h1>Community</h1>
+        <a href="YOUR_DEPLOYED_SCRIPT_URL" target="_blank">Create a Post</a>
+        <div id="postsContainer"></div>
+    </div>
+    <a href="https://github.com/Good-player/Good-player-github.io">Link to the Repository</a>
 </body>
 </html>
