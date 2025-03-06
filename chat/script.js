@@ -14,7 +14,7 @@ userInput.addEventListener('keypress', (e) => {
 });
 
 backToHubButton.addEventListener('click', () => {
-    window.location.href = 'hub.html'; // Change this to the actual hub URL
+    window.location.href = 'https://good-player.github.io/Good-player-github.io/hub.html'; // Change this to the actual hub URL
 });
 
 async function sendMessage() {
