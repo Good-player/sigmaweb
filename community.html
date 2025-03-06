@@ -1,1 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community</title>
+    <link rel="icon" href="pic/icon.png" type="image/png">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .post-form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .post-form input, .post-form textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .post-form button {
+            padding: 12px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .post-form button:hover {
+            background-color: #0277bd;
+            transform: translateY(-2px);
+        }
+        .post {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .post:last-child {
+            border-bottom: none;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-username {
+            font-weight: bold;
+            color: #333;
+        }
+        .post-time {
+            font-size: 12px;
+            color: gray;
+        }
+        .post-content {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .post-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .like-button, .comment-button, .delete-button, .edit-button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .like-button:hover, .comment-button:hover, .delete-button:hover, .edit-button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .like-count {
+            margin-left: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+        .comments {
+            margin-top: 10px;
+            padding-left: 20px;
+            border-left: 2px solid #ccc;
+        }
+        .comment {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .comment-input {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .comment-input textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .comment-input button {
+            padding: 10px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .comment-input button:hover {
+            background-color: #0277bd;
+            transform: translateY(-2px);
+        }
+        .back-button, .show-messages-button, .sigma-owner-button {
+            padding: 12px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .back-button:hover, .show-messages-button:hover, .sigma-owner-button:hover {
+            background-color: #0277bd;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="location.href='index.html'">Back to Hub</button>
+    <button class="show-messages-button" onclick="showMessages()">Show Messages</button>
+    <button class="sigma-owner-button" onclick="authenticateAndEditPost()">Sigma owner?</button>
+    <div class="container">
+        <h1>Community</h1>
+        <form id="postForm" class="post-form">
+            Username: <input type="text" id="username"><br><br>
+            Post Content: <textarea id="postContent"></textarea><br><br>
+            <button type="button" onclick="savePost()">Save Post</button>
+        </form>
+        <div id="postsContainer"></div>
+    </div>
+    <a href="https://github.com/Good-player/Good-player-github.io">Link to the Repository</a>
 
+    <script src="community.js"></script>
+</body>
+</html>
