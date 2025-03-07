@@ -2,4 +2,5 @@ blog.
 Y/M/D
 
 2025/3/5 added blog
-3/6 give upp with community. trying ai
+3/6 give upp with community. trying ai. Trying ai dead.
+3/7 Added a stock simulator. Changed scam and hub font to ubuntu font.
