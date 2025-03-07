@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mr. Sigma Boss Stock Investing Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,6 +37,12 @@
         .buy { background-color: green; color: white; }
         .sell { background-color: red; color: white; }
         .back-btn { background-color: gray; color: white; margin-top: 20px; }
+        canvas {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -44,14 +51,16 @@
     
     <div class="stock-container" id="stocks"></div>
     
+    <canvas id="stockChart"></canvas>
+    
     <button class="back-btn" onclick="window.location.href='hub.html'">Back to Hub</button>
     
     <script>
         let balance = 1000;
         const stocks = [
-            { name: "SigmaCorp", price: randomPrice() },
-            { name: "Boss Inc.", price: randomPrice() },
-            { name: "Alpha Trades", price: randomPrice() }
+            { name: "SigmaCorp", price: randomPrice(), history: [] },
+            { name: "Boss Inc.", price: randomPrice(), history: [] },
+            { name: "Alpha Trades", price: randomPrice(), history: [] }
         ];
         
         function randomPrice() {
@@ -64,6 +73,9 @@
             
             stocks.forEach((stock, index) => {
                 stock.price = (stock.price * (0.9 + Math.random() * 0.2)).toFixed(2);
+                stock.history.push(stock.price);
+                if (stock.history.length > 10) stock.history.shift();
+                
                 const stockElement = document.createElement("div");
                 stockElement.className = "stock";
                 stockElement.innerHTML = `
@@ -74,6 +86,7 @@
                 `;
                 stockContainer.appendChild(stockElement);
             });
+            updateChart();
         }
         
         function buyStock(index) {
@@ -90,6 +103,28 @@
             balance += parseFloat(stocks[index].price);
             document.getElementById("balance").innerText = balance.toFixed(2);
             alert(`You sold 1 share of ${stocks[index].name} at $${stocks[index].price}`);
+        }
+        
+        const ctx = document.getElementById("stockChart").getContext("2d");
+        const stockChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: Array(10).fill(""),
+                datasets: stocks.map(stock => ({
+                    label: stock.name,
+                    borderColor: `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
+                    data: stock.history,
+                    fill: false
+                }))
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        
+        function updateChart() {
+            stockChart.data.datasets.forEach((dataset, index) => {
+                dataset.data = stocks[index].history;
+            });
+            stockChart.update();
         }
         
         setInterval(updateStocks, 3000); // Stock prices update every 3 seconds
