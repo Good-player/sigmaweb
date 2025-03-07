@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mr. Sigma Boss Stock Investing Game</title>
+    <title>📈 Mr. Sigma Boss Stock Investing Game 📉</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: #121212;
             color: #fff;
             text-align: center;
@@ -17,6 +17,7 @@
             display: flex;
             justify-content: center;
             gap: 20px;
+            flex-wrap: wrap; /* Allow the items to wrap to the next line */
             margin-top: 20px;
         }
         .stock {
@@ -25,6 +26,7 @@
             border-radius: 8px;
             box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
             min-width: 150px;
+            margin-bottom: 20px;
         }
         button {
             margin-top: 10px;
@@ -37,6 +39,9 @@
         .buy { background-color: green; color: white; }
         .sell { background-color: red; color: white; }
         .back-btn { background-color: gray; color: white; margin-top: 20px; }
+        .diagram-size {
+            margin-top: 20px;
+        }
         canvas {
             width: 90vw;
             height: 70vh;
@@ -58,7 +63,15 @@
     <p>Current diagram size: <span id="current-history">10</span></p>
     <p>Current diagram points: <span id="diagram-points">0</span></p>
     
-    <div class="stock-container" id="stocks"></div>
+    <div class="stock-container" id="stocks">
+        <!-- Stock options will be dynamically generated here -->
+    </div>
+    
+    <div class="diagram-size">
+        <label for="resize-input">Resize Diagram:</label>
+        <input type="number" id="resize-input" min="300" max="1500" value="700">
+        <button onclick="resizeChart()">Resize</button>
+    </div>
     
     <canvas id="stockChart"></canvas>
     
@@ -67,13 +80,25 @@
     <script>
         let balance = 1000;
         let historySize = 10;
+        let chartWidth = 700;
+        let chartHeight = 400;
+
         const stocks = [
             { name: "SigmaCorp", price: randomPrice(), history: [], shares: 0 },
             { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
             { name: "Alpha Trades", price: randomPrice(), history: [], shares: 0 },
-            { name: "Bitcoin", price: randomPrice() * 10, history: [], shares: 0 },
             { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 },
-            { name: "Sigma AI", price: randomPrice(), history: [], shares: 0 }
+            { name: "Sigma AI", price: randomPrice(), history: [], shares: 0 },
+            { name: "Quantum Tech", price: randomPrice(), history: [], shares: 0 },
+            { name: "Solar Innovations", price: randomPrice(), history: [], shares: 0 },
+            { name: "NeuroTech", price: randomPrice(), history: [], shares: 0 },
+            { name: "Cyberlink", price: randomPrice(), history: [], shares: 0 },
+            { name: "Alpha Innovations", price: randomPrice(), history: [], shares: 0 },
+            { name: "FutureSpace", price: randomPrice(), history: [], shares: 0 },
+            { name: "HyperNet", price: randomPrice(), history: [], shares: 0 },
+            { name: "Techstorm", price: randomPrice(), history: [], shares: 0 },
+            { name: "CryoTech", price: randomPrice(), history: [], shares: 0 },
+            { name: "Metaverse Ventures", price: randomPrice(), history: [], shares: 0 }
         ];
 
         function randomPrice() {
@@ -94,6 +119,12 @@
             historySize = parseInt(document.getElementById("history-input").value);
             document.getElementById("current-history").innerText = historySize;
             stocks.forEach(stock => { stock.history = stock.history.slice(-historySize); });
+            updateChart();
+        }
+
+        function resizeChart() {
+            chartWidth = parseInt(document.getElementById("resize-input").value);
+            chartHeight = chartWidth * 0.57;  // Maintain a consistent aspect ratio
             updateChart();
         }
 
@@ -161,7 +192,11 @@
                     borderWidth: 3
                 }))
             },
-            options: { responsive: true, maintainAspectRatio: false, animation: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: false 
+            }
         });
 
         setInterval(updateStocks, 500); // Update frequency set to 0.5s
@@ -170,4 +205,3 @@
     </script>
 </body>
 </html>
-
