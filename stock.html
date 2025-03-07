@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📈 Mr. Sigma Boss Stock Investing Game 📉</title>
+    <title>Mr. Sigma Boss Stock Investing Game</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #121212;
             color: #fff;
             text-align: center;
@@ -15,9 +15,9 @@
         }
         .stock-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
-            flex-wrap: wrap;
             margin-top: 20px;
         }
         .stock {
@@ -26,7 +26,6 @@
             border-radius: 8px;
             box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
             min-width: 150px;
-            margin-bottom: 20px;
         }
         button {
             margin-top: 10px;
@@ -39,8 +38,7 @@
         .buy { background-color: green; color: white; }
         .sell { background-color: red; color: white; }
         .back-btn { background-color: gray; color: white; margin-top: 20px; }
-        .resize-container {
-            position: relative;
+        canvas {
             width: 90vw;
             height: 70vh;
             max-width: 90%;
@@ -48,40 +46,33 @@
             margin: 20px auto;
             background: white;
             border-radius: 8px;
-            overflow: hidden;
         }
-        .resize-handle {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 20px;
-            height: 20px;
-            background: #888;
-            cursor: se-resize;
+        .stock-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
 <body>
     <h1>📈 Mr. Sigma Boss Stock Investing Game 📉</h1>
-    <h2>💰 Balance: $<span id="balance">2000</span></h2>
+    <h2>💰 Balance: $<span id="balance">1000</span></h2>
     
-    <div class="stock-container" id="stocks">
-        <!-- Stock options will be dynamically generated here -->
-    </div>
-
-    <div class="resize-container" id="resize-container">
-        <canvas id="stockChart"></canvas>
-        <div class="resize-handle" id="resize-handle"></div>
-    </div>
+    <label for="history-size">Set diagram history size:</label>
+    <input type="number" id="history-input" value="10" min="5" max="500">
+    <button onclick="applyHistorySize()">Apply</button>
+    <p>Current diagram size: <span id="current-history">10</span></p>
+    <p>Current diagram points: <span id="diagram-points">0</span></p>
+    
+    <div class="stock-container" id="stocks"></div>
+    
+    <canvas id="stockChart"></canvas>
     
     <button class="back-btn" onclick="window.location.href='hub.html'">Back to Hub</button>
     
     <script>
-        let balance = 2000;
+        let balance = 1000;
         let historySize = 10;
-        let chartWidth = 700;
-        let chartHeight = 400;
-
         const stocks = [
             { name: "SigmaCorp", price: randomPrice(), history: [], shares: 0 },
             { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
@@ -99,7 +90,7 @@
             { name: "CryoLab", price: randomPrice(), history: [], shares: 0 },
             { name: "METAFACE Inc.", price: randomPrice(), history: [], shares: 0 }
         ];
-
+        
         function randomPrice() {
             return (Math.random() * 100 + 10).toFixed(2);
         }
@@ -112,10 +103,12 @@
             });
             document.getElementById("diagram-points").innerText = stocks[0].history.length;
             updateChart();
+            renderStocks();
         }
 
         function applyHistorySize() {
             historySize = parseInt(document.getElementById("history-input").value);
+            document.getElementById("current-history").innerText = historySize;
             stocks.forEach(stock => { stock.history = stock.history.slice(-historySize); });
             updateChart();
         }
@@ -130,43 +123,39 @@
         }
 
         function renderStocks() {
-            const stockContainer = document.getElementById('stocks');
-            stockContainer.innerHTML = ''; // Clear any previous stock buttons
-            stocks.forEach((stock, index) => {
-                const stockDiv = document.createElement('div');
-                stockDiv.classList.add('stock');
-                stockDiv.innerHTML = `
+            const stocksContainer = document.getElementById("stocks");
+            stocksContainer.innerHTML = ''; // Clear current content
+            stocks.forEach(stock => {
+                const stockElement = document.createElement("div");
+                stockElement.classList.add("stock");
+                stockElement.innerHTML = `
                     <h3>${stock.name}</h3>
-                    <p>Price: $${stock.price}</p>
+                    <p>Price: $<span>${stock.price}</span></p>
                     <p>Shares owned: ${stock.shares}</p>
-                    <button class="buy" onclick="buyStock(${index})">Buy</button>
-                    <button class="sell" onclick="sellStock(${index})">Sell</button>
+                    <button class="buy" onclick="buyStock('${stock.name}')">Buy</button>
+                    <button class="sell" onclick="sellStock('${stock.name}')">Sell</button>
                 `;
-                stockContainer.appendChild(stockDiv);
+                stocksContainer.appendChild(stockElement);
             });
         }
 
-        function buyStock(index) {
-            if (balance >= stocks[index].price) {
-                balance -= stocks[index].price;
-                stocks[index].shares++;
+        function buyStock(stockName) {
+            const stock = stocks.find(s => s.name === stockName);
+            if (balance >= stock.price) {
+                balance -= stock.price;
+                stock.shares++;
                 document.getElementById("balance").innerText = balance;
                 renderStocks();
-                updateChart();
-            } else {
-                alert("Not enough balance!");
             }
         }
 
-        function sellStock(index) {
-            if (stocks[index].shares > 0) {
-                balance += stocks[index].price;
-                stocks[index].shares--;
+        function sellStock(stockName) {
+            const stock = stocks.find(s => s.name === stockName);
+            if (stock.shares > 0) {
+                balance += stock.price;
+                stock.shares--;
                 document.getElementById("balance").innerText = balance;
                 renderStocks();
-                updateChart();
-            } else {
-                alert("No shares to sell!");
             }
         }
 
@@ -184,45 +173,12 @@
                     borderWidth: 3
                 }))
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                animation: false 
-            }
+            options: { responsive: true, maintainAspectRatio: false, animation: false }
         });
-
+        
         setInterval(updateStocks, 500); // Update frequency set to 0.5s
         stocks.forEach(stock => { stock.history = Array(historySize).fill(stock.price); });
-        renderStocks();  // Render stocks for the first time
-
-        // Resizable logic
-        const resizeContainer = document.getElementById('resize-container');
-        const resizeHandle = document.getElementById('resize-handle');
-        let isResizing = false;
-
-        resizeHandle.addEventListener('mousedown', (e) => {
-            isResizing = true;
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', () => {
-                isResizing = false;
-                document.removeEventListener('mousemove', onMouseMove);
-            });
-        });
-
-        function onMouseMove(e) {
-            if (isResizing) {
-                let newWidth = e.clientX - resizeContainer.getBoundingClientRect().left;
-                let newHeight = e.clientY - resizeContainer.getBoundingClientRect().top;
-
-                if (newWidth > 300 && newHeight > 300) {  // Set min size
-                    resizeContainer.style.width = newWidth + 'px';
-                    resizeContainer.style.height = newHeight + 'px';
-                    chartWidth = newWidth;
-                    chartHeight = newHeight;
-                    updateChart();
-                }
-            }
-        }
+        updateStocks();
     </script>
 </body>
 </html>
