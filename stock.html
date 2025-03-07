@@ -38,7 +38,10 @@
         .sell { background-color: red; color: white; }
         .back-btn { background-color: gray; color: white; margin-top: 20px; }
         canvas {
-            max-width: 600px;
+            width: 90vw;
+            height: 70vh;
+            max-width: 90%;
+            max-height: 70vh;
             margin: 20px auto;
             background: white;
             border-radius: 8px;
@@ -49,6 +52,12 @@
     <h1>📈 Mr. Sigma Boss Stock Investing Game 📉</h1>
     <h2>💰 Balance: $<span id="balance">1000</span></h2>
     
+    <label for="history-size">Set diagram history size:</label>
+    <input type="number" id="history-input" value="10" min="5" max="500">
+    <button onclick="applyHistorySize()">Apply</button>
+    <p>Current diagram size: <span id="current-history">10</span></p>
+    <p>Current diagram points: <span id="diagram-points">0</span></p>
+    
     <div class="stock-container" id="stocks"></div>
     
     <canvas id="stockChart"></canvas>
@@ -57,78 +66,108 @@
     
     <script>
         let balance = 1000;
+        let historySize = 10;
         const stocks = [
-            { name: "SigmaCorp", price: randomPrice(), history: [] },
-            { name: "Boss Inc.", price: randomPrice(), history: [] },
-            { name: "Alpha Trades", price: randomPrice(), history: [] }
+            { name: "SigmaCorp", price: randomPrice(), history: [], shares: 0 },
+            { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
+            { name: "Alpha Trades", price: randomPrice(), history: [], shares: 0 },
+            { name: "Bitcoin", price: randomPrice() * 10, history: [], shares: 0 },
+            { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 },
+            { name: "Sigma AI", price: randomPrice(), history: [], shares: 0 }
         ];
-        
+
         function randomPrice() {
             return (Math.random() * 100 + 10).toFixed(2);
         }
-        
+
         function updateStocks() {
-            const stockContainer = document.getElementById("stocks");
-            stockContainer.innerHTML = "";
-            
+            stocks.forEach(stock => {
+                stock.price = (stock.price * (0.98 + Math.random() * 0.04)).toFixed(2);
+                stock.history.push(parseFloat(stock.price));
+                if (stock.history.length > historySize) stock.history.shift();
+            });
+            document.getElementById("diagram-points").innerText = stocks[0].history.length;
+            updateChart();
+        }
+
+        function applyHistorySize() {
+            historySize = parseInt(document.getElementById("history-input").value);
+            document.getElementById("current-history").innerText = historySize;
+            stocks.forEach(stock => { stock.history = stock.history.slice(-historySize); });
+            updateChart();
+        }
+
+        function updateChart() {
+            stockChart.data.labels = Array.from({ length: historySize }, (_, i) => i + 1);
+            stockChart.data.datasets.forEach((dataset, index) => {
+                dataset.data = stocks[index].history;
+                dataset.borderWidth = dataset.data.length >= historySize - 5 ? 1 : 3;
+            });
+            stockChart.update();
+        }
+
+        function renderStocks() {
+            const stockContainer = document.getElementById('stocks');
+            stockContainer.innerHTML = ''; // Clear any previous stock buttons
             stocks.forEach((stock, index) => {
-                stock.price = (stock.price * (0.9 + Math.random() * 0.2)).toFixed(2);
-                stock.history.push(stock.price);
-                if (stock.history.length > 10) stock.history.shift();
-                
-                const stockElement = document.createElement("div");
-                stockElement.className = "stock";
-                stockElement.innerHTML = `
+                const stockDiv = document.createElement('div');
+                stockDiv.classList.add('stock');
+                stockDiv.innerHTML = `
                     <h3>${stock.name}</h3>
-                    <p>💵 Price: $${stock.price}</p>
+                    <p>Price: $${stock.price}</p>
+                    <p>Shares owned: ${stock.shares}</p>
                     <button class="buy" onclick="buyStock(${index})">Buy</button>
                     <button class="sell" onclick="sellStock(${index})">Sell</button>
                 `;
-                stockContainer.appendChild(stockElement);
+                stockContainer.appendChild(stockDiv);
             });
-            updateChart();
         }
-        
+
         function buyStock(index) {
             if (balance >= stocks[index].price) {
                 balance -= stocks[index].price;
-                document.getElementById("balance").innerText = balance.toFixed(2);
-                alert(`You bought 1 share of ${stocks[index].name} at $${stocks[index].price}`);
+                stocks[index].shares++;
+                document.getElementById("balance").innerText = balance;
+                renderStocks();
+                updateChart();
             } else {
-                alert("Not enough money!");
+                alert("Not enough balance!");
             }
         }
-        
+
         function sellStock(index) {
-            balance += parseFloat(stocks[index].price);
-            document.getElementById("balance").innerText = balance.toFixed(2);
-            alert(`You sold 1 share of ${stocks[index].name} at $${stocks[index].price}`);
+            if (stocks[index].shares > 0) {
+                balance += stocks[index].price;
+                stocks[index].shares--;
+                document.getElementById("balance").innerText = balance;
+                renderStocks();
+                updateChart();
+            } else {
+                alert("No shares to sell!");
+            }
         }
-        
+
         const ctx = document.getElementById("stockChart").getContext("2d");
         const stockChart = new Chart(ctx, {
             type: "line",
             data: {
-                labels: Array(10).fill(""),
+                labels: Array.from({ length: historySize }, (_, i) => i + 1),
                 datasets: stocks.map(stock => ({
                     label: stock.name,
                     borderColor: `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
                     data: stock.history,
-                    fill: false
+                    fill: false,
+                    tension: 0.2,
+                    borderWidth: 3
                 }))
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { responsive: true, maintainAspectRatio: false, animation: false }
         });
-        
-        function updateChart() {
-            stockChart.data.datasets.forEach((dataset, index) => {
-                dataset.data = stocks[index].history;
-            });
-            stockChart.update();
-        }
-        
-        setInterval(updateStocks, 3000); // Stock prices update every 3 seconds
-        updateStocks();
+
+        setInterval(updateStocks, 500); // Update frequency set to 0.5s
+        stocks.forEach(stock => { stock.history = Array(historySize).fill(stock.price); });
+        renderStocks();  // Render stocks for the first time
     </script>
 </body>
 </html>
+
