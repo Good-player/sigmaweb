@@ -17,7 +17,7 @@
             display: flex;
             justify-content: center;
             gap: 20px;
-            flex-wrap: wrap; /* Allow the items to wrap to the next line */
+            flex-wrap: wrap;
             margin-top: 20px;
         }
         .stock {
@@ -39,10 +39,8 @@
         .buy { background-color: green; color: white; }
         .sell { background-color: red; color: white; }
         .back-btn { background-color: gray; color: white; margin-top: 20px; }
-        .diagram-size {
-            margin-top: 20px;
-        }
-        canvas {
+        .resize-container {
+            position: relative;
             width: 90vw;
             height: 70vh;
             max-width: 90%;
@@ -50,35 +48,36 @@
             margin: 20px auto;
             background: white;
             border-radius: 8px;
+            overflow: hidden;
+        }
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 20px;
+            height: 20px;
+            background: #888;
+            cursor: se-resize;
         }
     </style>
 </head>
 <body>
     <h1>📈 Mr. Sigma Boss Stock Investing Game 📉</h1>
-    <h2>💰 Balance: $<span id="balance">1000</span></h2>
-    
-    <label for="history-size">Set diagram history size:</label>
-    <input type="number" id="history-input" value="10" min="5" max="500">
-    <button onclick="applyHistorySize()">Apply</button>
-    <p>Current diagram size: <span id="current-history">10</span></p>
-    <p>Current diagram points: <span id="diagram-points">0</span></p>
+    <h2>💰 Balance: $<span id="balance">2000</span></h2>
     
     <div class="stock-container" id="stocks">
         <!-- Stock options will be dynamically generated here -->
     </div>
-    
-    <div class="diagram-size">
-        <label for="resize-input">Resize Diagram:</label>
-        <input type="number" id="resize-input" min="300" max="1500" value="700">
-        <button onclick="resizeChart()">Resize</button>
+
+    <div class="resize-container" id="resize-container">
+        <canvas id="stockChart"></canvas>
+        <div class="resize-handle" id="resize-handle"></div>
     </div>
-    
-    <canvas id="stockChart"></canvas>
     
     <button class="back-btn" onclick="window.location.href='hub.html'">Back to Hub</button>
     
     <script>
-        let balance = 1000;
+        let balance = 2000;
         let historySize = 10;
         let chartWidth = 700;
         let chartHeight = 400;
@@ -88,17 +87,17 @@
             { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
             { name: "Alpha Trades", price: randomPrice(), history: [], shares: 0 },
             { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 },
-            { name: "Sigma AI", price: randomPrice(), history: [], shares: 0 },
-            { name: "Quantum Tech", price: randomPrice(), history: [], shares: 0 },
-            { name: "Solar Innovations", price: randomPrice(), history: [], shares: 0 },
-            { name: "NeuroTech", price: randomPrice(), history: [], shares: 0 },
-            { name: "Cyberlink", price: randomPrice(), history: [], shares: 0 },
-            { name: "Alpha Innovations", price: randomPrice(), history: [], shares: 0 },
-            { name: "FutureSpace", price: randomPrice(), history: [], shares: 0 },
-            { name: "HyperNet", price: randomPrice(), history: [], shares: 0 },
-            { name: "Techstorm", price: randomPrice(), history: [], shares: 0 },
-            { name: "CryoTech", price: randomPrice(), history: [], shares: 0 },
-            { name: "Metaverse Ventures", price: randomPrice(), history: [], shares: 0 }
+            { name: "Sigma™ AI", price: randomPrice(), history: [], shares: 0 },
+            { name: "BrainDamage AI Tech", price: randomPrice(), history: [], shares: 0 },
+            { name: "CO2 Pollution", price: randomPrice(), history: [], shares: 0 },
+            { name: "OpenAI", price: randomPrice(), history: [], shares: 0 },
+            { name: "BUUMGUN", price: randomPrice(), history: [], shares: 0 },
+            { name: "Teslaboom", price: randomPrice(), history: [], shares: 0 },
+            { name: "Space Z", price: randomPrice(), history: [], shares: 0 },
+            { name: "skibidi", price: randomPrice(), history: [], shares: 0 },
+            { name: "Weather M", price: randomPrice(), history: [], shares: 0 },
+            { name: "CryoLab", price: randomPrice(), history: [], shares: 0 },
+            { name: "METAFACE Inc.", price: randomPrice(), history: [], shares: 0 }
         ];
 
         function randomPrice() {
@@ -117,14 +116,7 @@
 
         function applyHistorySize() {
             historySize = parseInt(document.getElementById("history-input").value);
-            document.getElementById("current-history").innerText = historySize;
             stocks.forEach(stock => { stock.history = stock.history.slice(-historySize); });
-            updateChart();
-        }
-
-        function resizeChart() {
-            chartWidth = parseInt(document.getElementById("resize-input").value);
-            chartHeight = chartWidth * 0.57;  // Maintain a consistent aspect ratio
             updateChart();
         }
 
@@ -202,6 +194,35 @@
         setInterval(updateStocks, 500); // Update frequency set to 0.5s
         stocks.forEach(stock => { stock.history = Array(historySize).fill(stock.price); });
         renderStocks();  // Render stocks for the first time
+
+        // Resizable logic
+        const resizeContainer = document.getElementById('resize-container');
+        const resizeHandle = document.getElementById('resize-handle');
+        let isResizing = false;
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.removeEventListener('mousemove', onMouseMove);
+            });
+        });
+
+        function onMouseMove(e) {
+            if (isResizing) {
+                let newWidth = e.clientX - resizeContainer.getBoundingClientRect().left;
+                let newHeight = e.clientY - resizeContainer.getBoundingClientRect().top;
+
+                if (newWidth > 300 && newHeight > 300) {  // Set min size
+                    resizeContainer.style.width = newWidth + 'px';
+                    resizeContainer.style.height = newHeight + 'px';
+                    chartWidth = newWidth;
+                    chartHeight = newHeight;
+                    updateChart();
+                }
+            }
+        }
     </script>
 </body>
 </html>
