@@ -19,6 +19,7 @@
         .sell { background: red; color: white; }
         select, input { padding: 5px; margin: 5px; border-radius: 5px; border: none; }
         canvas { background: #000; border-radius: 10px; margin-top: 20px; }
+        .hub-btn { background: orange; color: white; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -35,6 +36,7 @@
 </select>
 
 <button onclick="toggleDots()">Toggle Dots</button>
+<button class="hub-btn" onclick="backToHub()">🏠 Back to Hub</button>
 
 <div class="stock-container" id="stocks"></div>
 
@@ -50,18 +52,7 @@
         { name: "SigmaCorp", price: randomPrice(), history: [], shares: 0 },
         { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
         { name: "Alpha Trades", price: randomPrice(), history: [], shares: 0 },
-        { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 },
-        { name: "Sigma™ AI", price: randomPrice(), history: [], shares: 0 },
-        { name: "BrainDamage AI Tech", price: randomPrice(), history: [], shares: 0 },
-        { name: "CO2 Pollution", price: randomPrice(), history: [], shares: 0 },
-        { name: "OpenAI", price: randomPrice(), history: [], shares: 0 },
-        { name: "BUUMGUN", price: randomPrice(), history: [], shares: 0 },
-        { name: "Teslaboom", price: randomPrice(), history: [], shares: 0 },
-        { name: "Space Z", price: randomPrice(), history: [], shares: 0 },
-        { name: "skibidi", price: randomPrice(), history: [], shares: 0 },
-        { name: "Weather M", price: randomPrice(), history: [], shares: 0 },
-        { name: "CryoLab", price: randomPrice(), history: [], shares: 0 },
-        { name: "METAFACE Inc.", price: randomPrice(), history: [], shares: 0 }
+        { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 }
     ];
 
     const ctx = document.getElementById('stockChart').getContext('2d');
@@ -75,7 +66,6 @@
 
     function updateStocks() {
         stocks.forEach(stock => {
-            let oldPrice = stock.price;
             stock.price = (stock.price * (0.98 + Math.random() * 0.04)).toFixed(2);
             stock.history.push(parseFloat(stock.price));
             if (stock.history.length > historySize) stock.history.shift();
@@ -133,17 +123,19 @@
                 pointRadius: showDots ? 2 : 0,
                 fill: false
             }));
+            stockChart.config.type = 'line';
         } else {
             const stock = stocks.find(s => s.name === selectedStock);
-            const growing = stock.history[stock.history.length - 1] >= stock.history[0];
+            const trendGrowing = stock.history[stock.history.length - 1] >= stock.history[0];
             datasets.push({
                 label: stock.name,
                 data: stock.history,
-                backgroundColor: growing ? 'red' : 'green',
-                borderColor: growing ? 'red' : 'green',
-                type: 'bar', // Block style
+                backgroundColor: trendGrowing ? 'red' : 'green',
+                borderColor: trendGrowing ? 'red' : 'green',
+                type: 'bar',
                 borderWidth: 0
             });
+            stockChart.config.type = 'bar';
         }
         stockChart.data.labels = Array.from({ length: historySize }, (_, i) => i + 1);
         stockChart.data.datasets = datasets;
@@ -162,7 +154,12 @@
 
     function randomColor() { return `hsl(${Math.random() * 360}, 100%, 50%)`; }
 
-    stocks.forEach(stock => { stock.history = Array(historySize).fill(parseFloat(stock.price)); });
+    function backToHub() {
+        window.location.href = 'hub.html'; // Change to your real hub page
+    }
+
+    // Initialize stock history and dropdown
+    stocks.forEach(stock => stock.history = Array(historySize).fill(parseFloat(stock.price)));
     stocks.forEach(stock => document.getElementById('stock-selector').innerHTML += `<option value="${stock.name}">${stock.name}</option>`);
     setInterval(updateStocks, 1000);
 </script>
