@@ -34,12 +34,21 @@
         }
         .buy { background: green; color: white; }
         .sell { background: red; color: white; }
-        canvas {
-            margin-top: 20px;
+        .chart-container {
             background: white;
             border-radius: 10px;
             resize: both;
-            overflow: auto;
+            overflow: hidden;
+            min-width: 300px;
+            min-height: 200px;
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            position: relative;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
         }
         select, label, input {
             margin: 10px;
@@ -63,7 +72,9 @@
 
 <div class="stock-container" id="stocks"></div>
 
-<canvas id="stockChart" width="800" height="400"></canvas>
+<div class="chart-container" id="chart-container">
+    <canvas id="stockChart"></canvas>
+</div>
 
 <script>
     let balance = 1000;
@@ -112,7 +123,6 @@
 
     function updateStocks() {
         stocks.forEach(stock => {
-            const oldPrice = stock.price;
             stock.price = (stock.price * (0.98 + Math.random() * 0.04)).toFixed(2);
             stock.history.push(parseFloat(stock.price));
             if (stock.history.length > historySize) stock.history.shift();
@@ -127,8 +137,6 @@
         if (balance >= stock.price) {
             stock.shares++;
             balance -= parseFloat(stock.price);
-            renderStocks();
-            document.getElementById("balance").innerText = balance.toFixed(2);
         }
     }
 
@@ -136,18 +144,12 @@
         const stock = stocks[index];
         if (stock.shares > 0) {
             stock.shares--;
-            balance += parseFloat(stock.price);
-            renderStocks();
-            document.getElementById("balance").innerText = balance.toFixed(2);
+            balance += parseFloat(stock.price); // Fix: Add money on sell
         }
     }
 
     const ctx = document.getElementById("stockChart").getContext("2d");
-    let stockChart = new Chart(ctx, {
-        type: "line",
-        data: { labels: Array(historySize).fill(''), datasets: [] },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
+    let stockChart = new Chart(ctx, { type: "line", data: {}, options: {} });
 
     function updateChart() {
         selectedStock = document.getElementById("stock-select").value;
@@ -170,8 +172,8 @@
         } else {
             const stock = stocks.find(s => s.name === selectedStock);
             const isGrowing = stock.history[stock.history.length - 1] >= stock.history[0];
-            bgColor = isGrowing ? "#801010" : "#108010"; // red/green theme
-            chartType = "bar";
+            bgColor = isGrowing ? "#801010" : "#108010";
+            chartType = "bar"; // block style
             datasets = [{
                 label: stock.name,
                 backgroundColor: isGrowing ? "red" : "green",
@@ -179,7 +181,7 @@
             }];
         }
 
-        document.getElementById("stockChart").parentElement.style.background = bgColor;
+        document.getElementById("chart-container").style.background = bgColor;
         stockChart.destroy();
         stockChart = new Chart(ctx, {
             type: chartType,
@@ -188,7 +190,7 @@
         });
     }
 
-    // Fill initial history and dropdown
+    // Init
     stocks.forEach(stock => stock.history = Array(historySize).fill(stock.price));
     const stockSelect = document.getElementById("stock-select");
     stocks.forEach(stock => {
@@ -198,10 +200,11 @@
         stockSelect.appendChild(option);
     });
 
-    setInterval(updateStocks, 1000); // Updates every second
+    setInterval(updateStocks, 1000);
     renderStocks();
     updateChart();
 </script>
+
 </body>
 </html>
 
