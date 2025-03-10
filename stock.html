@@ -2,183 +2,206 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mr. Sigma Boss Stock Investing Game</title>
+    <title>Mr. Sigma Boss Stock Game</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #121212;
-            color: #fff;
-            text-align: center;
+            color: white;
             padding: 20px;
+            text-align: center;
         }
         .stock-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
         }
         .stock {
             background: #1e1e1e;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
-            min-width: 150px;
         }
         button {
-            margin-top: 10px;
-            padding: 10px;
+            padding: 5px;
+            margin-top: 5px;
+            width: 100%;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
         }
-        .buy { background-color: green; color: white; }
-        .sell { background-color: red; color: white; }
-        .back-btn { background-color: gray; color: white; margin-top: 20px; }
+        .buy { background: green; color: white; }
+        .sell { background: red; color: white; }
         canvas {
-            width: 90vw;
-            height: 70vh;
-            max-width: 90%;
-            max-height: 70vh;
-            margin: 20px auto;
+            margin-top: 20px;
             background: white;
-            border-radius: 8px;
+            border-radius: 10px;
+            resize: both;
+            overflow: auto;
         }
-        .stock-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        select, label, input {
+            margin: 10px;
+            padding: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>📈 Mr. Sigma Boss Stock Investing Game 📉</h1>
-    <h2>💰 Balance: $<span id="balance">1000</span></h2>
-    
-    <label for="history-size">Set diagram history size:</label>
-    <input type="number" id="history-input" value="10" min="5" max="500">
-    <button onclick="applyHistorySize()">Apply</button>
-    <p>Current diagram size: <span id="current-history">10</span></p>
-    <p>Current diagram points: <span id="diagram-points">0</span></p>
-    
-    <div class="stock-container" id="stocks"></div>
-    
-    <canvas id="stockChart"></canvas>
-    
-    <button class="back-btn" onclick="window.location.href='hub.html'">Back to Hub</button>
-    
-    <script>
-        let balance = 1000;
-        let historySize = 10;
-        const stocks = [
-            { name: "SigmaCorp", price: randomPrice(), history: [], shares: 0 },
-            { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
-            { name: "Alpha Trades", price: randomPrice(), history: [], shares: 0 },
-            { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 },
-            { name: "Sigma™ AI", price: randomPrice(), history: [], shares: 0 },
-            { name: "BrainDamage AI Tech", price: randomPrice(), history: [], shares: 0 },
-            { name: "CO2 Pollution", price: randomPrice(), history: [], shares: 0 },
-            { name: "OpenAI", price: randomPrice(), history: [], shares: 0 },
-            { name: "BUUMGUN", price: randomPrice(), history: [], shares: 0 },
-            { name: "Teslaboom", price: randomPrice(), history: [], shares: 0 },
-            { name: "Space Z", price: randomPrice(), history: [], shares: 0 },
-            { name: "skibidi", price: randomPrice(), history: [], shares: 0 },
-            { name: "Weather M", price: randomPrice(), history: [], shares: 0 },
-            { name: "CryoLab", price: randomPrice(), history: [], shares: 0 },
-            { name: "METAFACE Inc.", price: randomPrice(), history: [], shares: 0 }
-        ];
-        
-        function randomPrice() {
-            return (Math.random() * 100 + 10).toFixed(2);
-        }
 
-        function updateStocks() {
-            stocks.forEach(stock => {
-                stock.price = (stock.price * (0.98 + Math.random() * 0.04)).toFixed(2);
-                stock.history.push(parseFloat(stock.price));
-                if (stock.history.length > historySize) stock.history.shift();
-            });
-            document.getElementById("diagram-points").innerText = stocks[0].history.length;
-            updateChart();
-            renderStocks();
-        }
+<h1>📈 Mr. Sigma Boss Stock Game 📉</h1>
+<h2>💰 Balance: $<span id="balance">1000</span></h2>
 
-        function applyHistorySize() {
-            historySize = parseInt(document.getElementById("history-input").value);
-            document.getElementById("current-history").innerText = historySize;
-            stocks.forEach(stock => { stock.history = stock.history.slice(-historySize); });
-            updateChart();
-        }
+<label for="stock-select">Select stock:</label>
+<select id="stock-select" onchange="updateChart()">
+    <option value="ALL">ALL</option>
+</select>
 
-        function updateChart() {
-            stockChart.data.labels = Array.from({ length: historySize }, (_, i) => i + 1);
-            stockChart.data.datasets.forEach((dataset, index) => {
-                dataset.data = stocks[index].history;
-                dataset.borderWidth = dataset.data.length >= historySize - 5 ? 1 : 3;
-            });
-            stockChart.update();
-        }
+<label>
+    <input type="checkbox" id="dot-toggle" onchange="updateChart()"> Show Dots
+</label>
 
-        function renderStocks() {
-            const stocksContainer = document.getElementById("stocks");
-            stocksContainer.innerHTML = ''; // Clear current content
-            stocks.forEach(stock => {
-                const stockElement = document.createElement("div");
-                stockElement.classList.add("stock");
-                stockElement.innerHTML = `
-                    <h3>${stock.name}</h3>
-                    <p>Price: $<span>${stock.price}</span></p>
-                    <p>Shares owned: ${stock.shares}</p>
-                    <button class="buy" onclick="buyStock('${stock.name}')">Buy</button>
-                    <button class="sell" onclick="sellStock('${stock.name}')">Sell</button>
-                `;
-                stocksContainer.appendChild(stockElement);
-            });
-        }
+<div class="stock-container" id="stocks"></div>
 
-        function buyStock(stockName) {
-            const stock = stocks.find(s => s.name === stockName);
-            if (balance >= stock.price) {
-                balance -= stock.price;
-                stock.shares++;
-                document.getElementById("balance").innerText = balance;
-                renderStocks();
-            }
-        }
+<canvas id="stockChart" width="800" height="400"></canvas>
 
-        function sellStock(stockName) {
-            const stock = stocks.find(s => s.name === stockName);
-            if (stock.shares > 0) {
-                balance += stock.price;
-                stock.shares--;
-                document.getElementById("balance").innerText = balance;
-                renderStocks();
-            }
-        }
+<script>
+    let balance = 1000;
+    let historySize = 20;
+    let showDots = false;
+    let selectedStock = "ALL";
 
-        const ctx = document.getElementById("stockChart").getContext("2d");
-        const stockChart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: Array.from({ length: historySize }, (_, i) => i + 1),
-                datasets: stocks.map(stock => ({
-                    label: stock.name,
-                    borderColor: `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
-                    data: stock.history,
-                    fill: false,
-                    tension: 0.2,
-                    borderWidth: 3
-                }))
-            },
-            options: { responsive: true, maintainAspectRatio: false, animation: false }
+    const stocks = [
+        { name: "SigmaCorp", price: randomPrice(), history: [], shares: 0 },
+        { name: "Boss Inc.", price: randomPrice(), history: [], shares: 0 },
+        { name: "Alpha Trades", price: randomPrice(), history: [], shares: 0 },
+        { name: "Meme Stonks", price: randomPrice(), history: [], shares: 0 },
+        { name: "Sigma™ AI", price: randomPrice(), history: [], shares: 0 },
+        { name: "BrainDamage AI Tech", price: randomPrice(), history: [], shares: 0 },
+        { name: "CO2 Pollution", price: randomPrice(), history: [], shares: 0 },
+        { name: "OpenAI", price: randomPrice(), history: [], shares: 0 },
+        { name: "BUUMGUN", price: randomPrice(), history: [], shares: 0 },
+        { name: "Teslaboom", price: randomPrice(), history: [], shares: 0 },
+        { name: "Space Z", price: randomPrice(), history: [], shares: 0 },
+        { name: "skibidi", price: randomPrice(), history: [], shares: 0 },
+        { name: "Weather M", price: randomPrice(), history: [], shares: 0 },
+        { name: "CryoLab", price: randomPrice(), history: [], shares: 0 },
+        { name: "METAFACE Inc.", price: randomPrice(), history: [], shares: 0 }
+    ];
+
+    function randomPrice() {
+        return (Math.random() * 100 + 10).toFixed(2);
+    }
+
+    function renderStocks() {
+        const container = document.getElementById("stocks");
+        container.innerHTML = "";
+        stocks.forEach((stock, index) => {
+            const div = document.createElement("div");
+            div.className = "stock";
+            div.innerHTML = `
+                <h3>${stock.name}</h3>
+                <p>💲 ${stock.price}</p>
+                <p>Shares: ${stock.shares}</p>
+                <button class="buy" onclick="buyStock(${index})">Buy</button>
+                <button class="sell" onclick="sellStock(${index})">Sell</button>
+            `;
+            container.appendChild(div);
         });
-        
-        setInterval(updateStocks, 500); // Update frequency set to 0.5s
-        stocks.forEach(stock => { stock.history = Array(historySize).fill(stock.price); });
-        updateStocks();
-    </script>
+    }
+
+    function updateStocks() {
+        stocks.forEach(stock => {
+            const oldPrice = stock.price;
+            stock.price = (stock.price * (0.98 + Math.random() * 0.04)).toFixed(2);
+            stock.history.push(parseFloat(stock.price));
+            if (stock.history.length > historySize) stock.history.shift();
+        });
+        document.getElementById("balance").innerText = balance.toFixed(2);
+        renderStocks();
+        updateChart();
+    }
+
+    function buyStock(index) {
+        const stock = stocks[index];
+        if (balance >= stock.price) {
+            stock.shares++;
+            balance -= parseFloat(stock.price);
+            renderStocks();
+            document.getElementById("balance").innerText = balance.toFixed(2);
+        }
+    }
+
+    function sellStock(index) {
+        const stock = stocks[index];
+        if (stock.shares > 0) {
+            stock.shares--;
+            balance += parseFloat(stock.price);
+            renderStocks();
+            document.getElementById("balance").innerText = balance.toFixed(2);
+        }
+    }
+
+    const ctx = document.getElementById("stockChart").getContext("2d");
+    let stockChart = new Chart(ctx, {
+        type: "line",
+        data: { labels: Array(historySize).fill(''), datasets: [] },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    function updateChart() {
+        selectedStock = document.getElementById("stock-select").value;
+        showDots = document.getElementById("dot-toggle").checked;
+
+        let datasets = [];
+        let chartType = "line";
+        let bgColor = '#121212';
+
+        if (selectedStock === "ALL") {
+            datasets = stocks.map(stock => ({
+                label: stock.name,
+                borderColor: `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
+                data: stock.history,
+                fill: false,
+                tension: 0.2,
+                borderWidth: 2,
+                pointRadius: showDots ? 3 : 0
+            }));
+        } else {
+            const stock = stocks.find(s => s.name === selectedStock);
+            const isGrowing = stock.history[stock.history.length - 1] >= stock.history[0];
+            bgColor = isGrowing ? "#801010" : "#108010"; // red/green theme
+            chartType = "bar";
+            datasets = [{
+                label: stock.name,
+                backgroundColor: isGrowing ? "red" : "green",
+                data: stock.history
+            }];
+        }
+
+        document.getElementById("stockChart").parentElement.style.background = bgColor;
+        stockChart.destroy();
+        stockChart = new Chart(ctx, {
+            type: chartType,
+            data: { labels: Array(historySize).fill(''), datasets },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // Fill initial history and dropdown
+    stocks.forEach(stock => stock.history = Array(historySize).fill(stock.price));
+    const stockSelect = document.getElementById("stock-select");
+    stocks.forEach(stock => {
+        const option = document.createElement("option");
+        option.value = stock.name;
+        option.innerText = stock.name;
+        stockSelect.appendChild(option);
+    });
+
+    setInterval(updateStocks, 1000); // Updates every second
+    renderStocks();
+    updateChart();
+</script>
 </body>
 </html>
+
