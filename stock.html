@@ -177,25 +177,30 @@
             });
         }
 
-        function buyStock(stockName) {
-            const stock = stocks.find(s => s.name === stockName);
-            if (balance >= stock.price) {
-                balance -= stock.price;
-                stock.shares++;
-                document.getElementById("balance").innerText = balance;
-                renderStocks();
-            }
-        }
+function buyStock(stockName) {
+    const stock = stocks.find(s => s.name === stockName);
+    const price = parseFloat(stock.price); // Convert to number
+    if (balance >= price) {
+        balance -= price;
+        stock.shares++;
+        document.getElementById("balance").innerText = balance.toFixed(2); // Always show 2 decimal places
+        renderStocks();
+        updateChart();
+    }
+}
 
-        function sellStock(stockName) {
-            const stock = stocks.find(s => s.name === stockName);
-            if (stock.shares > 0) {
-                balance += stock.price;
-                stock.shares--;
-                document.getElementById("balance").innerText = balance;
-                renderStocks();
-            }
-        }
+function sellStock(stockName) {
+    const stock = stocks.find(s => s.name === stockName);
+    const price = parseFloat(stock.price); // Convert to number
+    if (stock.shares > 0) {
+        balance += price;
+        stock.shares--;
+        document.getElementById("balance").innerText = balance.toFixed(2); // Always show 2 decimal places
+        renderStocks();
+        updateChart();
+    }
+}
+
 
         const ctx = document.getElementById("stockChart").getContext("2d");
         const stockChart = new Chart(ctx, {
