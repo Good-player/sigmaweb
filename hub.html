@@ -13,34 +13,73 @@
         }
         body {
             font-family: 'Ubuntu', sans-serif;
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: flex-start;
-            height: 100vh;
-            background-color: #e0f7fa;
             margin: 0;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        .content {
+            padding: 0;
             display: flex;
             flex-direction: column;
+            height: 100vh;
+            background-color: #f1f1f1;
+        }
+        .navbar {
+            display: flex;
             align-items: center;
-            justify-content: flex-start;
+            background-color: #e0e0e0;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .tabs {
+            display: flex;
+            flex: 1;
+        }
+        .tab {
+            padding: 10px 15px;
+            margin-right: 5px;
+            background-color: #ffffff;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #f1f1f1;
+            box-shadow: none;
+        }
+        .url-bar {
+            flex: 2;
             margin-left: 20px;
-            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 5px 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .url-bar input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+        .url-bar button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
         }
         .button {
-            padding: 15px 30px;
-            font-size: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
             color: white;
             background-color: #0288d1;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             margin: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s, transform 0.3s;
         }
         .button:hover {
@@ -48,17 +87,17 @@
             transform: translateY(-2px);
         }
         .description {
-            margin-bottom: 20px;
-            font-size: 18px;
-            color: #555;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
         }
         .update-log {
             margin-top: 20px;
             padding: 20px;
             background-color: #ffffff;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
         }
         .poster-container {
@@ -74,25 +113,34 @@
     </style>
 </head>
 <body>
-    <div class="poster-container">
-        <img src="posrter.jpg" alt="Poster" class="poster" onclick="location.href='https://store.steampowered.com/app/3554820/XELVITA/'">
+    <div class="navbar">
+        <div class="tabs">
+            <div class="tab active">Hub</div>
+            <div class="tab">Main Menu</div>
+            <div class="tab">Developers Hub</div>
+        </div>
+        <div class="url-bar">
+            <button onclick="location.href='index.html'"><img src="icons/home.svg" alt="Home"></button>
+            <input type="text" value="https://github.com/Good-player/sigmaweb" readonly>
+            <button onclick="location.href='hubdev.html'"><img src="icons/developer.svg" alt="Developer Hub"></button>
+        </div>
     </div>
     <div class="content">
         <h1>Welcome to the Hub</h1>
         <button class="button" onclick="location.href='index.html'">Main menu</button>
         <div class="description">Rage quit/Logout</div>
         <button class="button" onclick="location.href='hubdev.html'">Developers hub</button>
-        <div class="description">Completly not done thing will be on here. And this site background is bad. idc tbh</div>
+        <div class="description">Completely not done thing will be on here. And this site background is bad. idc tbh</div>
         <button class="button" onclick="window.open('https://discord.gg/smnUbgZ22G', '_blank')">DISCORD</button>
         <div class="description">Our official discord chat.</div>
         <button class="button" onclick="window.open('https://github.com/Good-player/sigmaweb/pulls', '_blank')">Pulls</button>
-        <div class="description">If you need to fix some bugs (tbh no) or submit what do you want. Click the button and pull a request. (Ex:Feedback)</div>
+        <div class="description">If you need to fix some bugs (tbh no) or submit what do you want. Click the button and pull a request. (Ex: Feedback)</div>
         <button class="button" onclick="location.href='money.html'">Money Clicker Game</button>
-        <div class="description">a clicker game</div>
+        <div class="description">A clicker game</div>
         <button class="button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
         <div class="description">Working omg free robux/vbucks. *jk</div>
         <button class="button" onclick="location.href='stock.html'">sigma invest GAME</button>
-        <div class="description">ONLY SIGMA RICH INVESTER GUY ONLY!!!!!</div>
+        <div class="description">ONLY SIGMA RICH INVESTOR GUY ONLY!!!!!</div>
         <button class="button" onclick="window.open('https://sites.google.com/edu.sollentuna.se/kilofilm', '_blank')">KiloFilm</button>
         <div class="description">A website that mine friend created. Is just a playing film website. A film about a trailer.</div>
         <div class="update-log" id="updateLog">
