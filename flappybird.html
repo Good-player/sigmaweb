@@ -51,8 +51,8 @@
             y: 150,
             width: 20,
             height: 20,
-            gravity: 0.6,
-            lift: -15,
+            gravity: 0.5,
+            lift: -12,
             velocity: 0
         };
 
@@ -77,7 +77,7 @@
         function updatePipes() {
             if (frame % 120 === 0) {
                 let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 20;
-                let gap = 120;
+                let gap = 150;
                 pipes.push({
                     x: canvas.width,
                     width: 20,
