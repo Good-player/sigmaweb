@@ -6,4 +6,4 @@ Y/M/D
 3/7 Added a stock simulator. Changed scam and hub font to ubuntu font.
 3/13 Added a button to kilofilm
 3/17 Added devhub. Trying pong
-3/31 Nah im out with pong. Flappy bird on beta. AVAIL on devhub
+3/31 Nah im out with pong. Flappy block now avail.
