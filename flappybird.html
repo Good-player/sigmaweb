@@ -75,14 +75,15 @@
         }
 
         function updatePipes() {
-            if (frame % 90 === 0) {
+            if (frame % 120 === 0) {
                 let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 20;
-                let gap = 80;
+                let gap = 120;
                 pipes.push({
                     x: canvas.width,
                     width: 20,
                     top: pipeHeight,
-                    bottom: canvas.height - pipeHeight - gap
+                    bottom: canvas.height - pipeHeight - gap,
+                    passed: false
                 });
             }
 
@@ -127,6 +128,12 @@
                     gameOver = true;
                     resetGame();
                 }
+
+                if (!pipe.passed && pipe.x + pipe.width < block.x) {
+                    score++;
+                    pipe.passed = true;
+                    scoreDisplay.innerText = 'Score: ' + score;
+                }
             });
         }
 
@@ -141,11 +148,6 @@
             updateBlock();
             updatePipes();
             detectCollision();
-
-            if (!gameOver) {
-                score++;
-                scoreDisplay.innerText = 'Score: ' + score;
-            }
         }
 
         function loop() {
