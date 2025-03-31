@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Block</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+        #backButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        #backButton:hover {
+            background-color: #0056b3;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="320" height="480"></canvas>
+    <div id="score">Score: 0</div>
+    <a id="backButton" href="hubdev.html">Back to Hub</a>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+
+        let block = {
+            x: 50,
+            y: 150,
+            width: 20,
+            height: 20,
+            gravity: 0.6,
+            lift: -15,
+            velocity: 0
+        };
+
+        let pipes = [];
+        let frame = 0;
+        let score = 0;
+        let gameOver = false;
+
+        function drawBlock() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(block.x, block.y, block.width, block.height);
+        }
+
+        function drawPipes() {
+            ctx.fillStyle = '#000';
+            pipes.forEach(pipe => {
+                ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+                ctx.fillRect(pipe.x, canvas.height - pipe.bottom, pipe.width, pipe.bottom);
+            });
+        }
+
+        function updatePipes() {
+            if (frame % 90 === 0) {
+                let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 20;
+                let gap = 80;
+                pipes.push({
+                    x: canvas.width,
+                    width: 20,
+                    top: pipeHeight,
+                    bottom: canvas.height - pipeHeight - gap
+                });
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= 2;
+            });
+
+            pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
+        }
+
+        function updateBlock() {
+            block.velocity += block.gravity;
+            block.y += block.velocity;
+
+            if (block.y + block.height > canvas.height) {
+                block.y = canvas.height - block.height;
+                block.velocity = 0;
+                resetGame();
+            }
+
+            if (block.y < 0) {
+                block.y = 0;
+                block.velocity = 0;
+            }
+        }
+
+        function resetGame() {
+            block.y = 150;
+            block.velocity = 0;
+            pipes = [];
+            score = 0;
+            frame = 0;
+            gameOver = false;
+            scoreDisplay.innerText = 'Score: ' + score;
+        }
+
+        function detectCollision() {
+            pipes.forEach(pipe => {
+                if (block.x < pipe.x + pipe.width &&
+                    block.x + block.width > pipe.x &&
+                    (block.y < pipe.top || block.y + block.height > canvas.height - pipe.bottom)) {
+                    gameOver = true;
+                    resetGame();
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBlock();
+            drawPipes();
+        }
+
+        function update() {
+            frame++;
+            updateBlock();
+            updatePipes();
+            detectCollision();
+
+            if (!gameOver) {
+                score++;
+                scoreDisplay.innerText = 'Score: ' + score;
+            }
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                block.velocity = block.lift;
+            }
+        });
+
+        window.addEventListener('mousedown', () => {
+            block.velocity = block.lift;
+        });
+
+        loop();
+    </script>
+</body>
+</html>
