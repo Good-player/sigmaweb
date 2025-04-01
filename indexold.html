@@ -1,1 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(Gen alpha) SIGMA WEBSITE</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        #submitBtn {
+            background-color: grey;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to my skibidi sigma website</h1>
+    <label>This is my first website ever created lol.</label>
+    <label>You need to done your sigma test in recaptcha and click submit for go to our hub. (WARNING:GEN ALPHA + BRAINROT!!!!!1!!1)</label>
+    <form id="recaptcha-form" action="hub.html" method="GET">
+        <div class="g-recaptcha" data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE" data-callback="recaptchaCallback" data-expired-callback="recaptchaExpired"></div>
+        <button id="submitBtn" type="submit">Submit</button>
+    </form>
+    <script>
+        function recaptchaCallback(response) {
+            if (response) {
+                document.getElementById('submitBtn').style.backgroundColor = 'green';
+                document.getElementById('submitBtn').style.pointerEvents = 'auto';
+            }
+        }
+
+        function recaptchaExpired() {
+            document.getElementById('submitBtn').style.backgroundColor = 'grey';
+            document.getElementById('submitBtn').style.pointerEvents = 'none';
+        }
+
+        document.getElementById('recaptcha-form').addEventListener('submit', function(event) {
+            var recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                event.preventDefault();
+                window.location.href = 'robotalert.html';
+            } else {
+                // Allow the form to be submitted normally
+            }
+        });
+    </script>
+    <!-- Link to redirect to the GitHub repository -->
+    <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my github thing or idk</a>
+    <style>
+        #repoLink {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-decoration: none;
+            color: blue;
+            font-size: 16px;
+        }
+
+        #repoLink:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=YTIAkzXUcAmJ9jAO&amp;start=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</body>
 
