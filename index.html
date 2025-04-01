@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(Gen alpha) SIGMA WEBSITE</title>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -33,9 +34,12 @@
             align-items: center;
         }
         .g-recaptcha {
+            position: relative;
             margin-bottom: 20px;
         }
         #submitBtn {
+            position: relative;
+            overflow: hidden;
             background-color: grey;
             color: white;
             border: none;
@@ -43,6 +47,22 @@
             font-size: 16px;
             cursor: not-allowed;
             transition: background-color 0.3s ease;
+        }
+        #submitBtn:focus {
+            outline: none;
+        }
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
         #repoLink {
             position: fixed;
@@ -75,6 +95,12 @@
         .redirect-button:hover {
             background-color: #0056b3;
         }
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background-color: green;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -92,6 +118,7 @@
                 document.getElementById('submitBtn').style.backgroundColor = 'green';
                 document.getElementById('submitBtn').style.cursor = 'pointer';
                 document.getElementById('submitBtn').style.pointerEvents = 'auto';
+                playAnimation();
             }
         }
 
@@ -109,6 +136,46 @@
             } else {
                 // Allow the form to be submitted normally
             }
+        });
+
+        function playAnimation() {
+            var recaptchaElement = document.querySelector('.g-recaptcha');
+            for (var i = 0; i < 50; i++) { // Increased number of circles
+                var circle = document.createElement('div');
+                circle.classList.add('circle');
+                circle.style.width = '0px';
+                circle.style.height = '0px';
+                circle.style.left = '50%';
+                circle.style.top = '50%';
+                recaptchaElement.appendChild(circle);
+                anime({
+                    targets: circle,
+                    width: ['0px', '30px'], // Smaller size
+                    height: ['0px', '30px'], // Smaller size
+                    opacity: [1, 0],
+                    translateX: function() { return anime.random(-200, 200) + 'px'; },
+                    translateY: function() { return anime.random(-200, 200) + 'px'; },
+                    duration: 2000,
+                    easing: 'easeOutExpo',
+                    complete: function(anim) {
+                        anim.targets[0].remove();
+                    }
+                });
+            }
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            var rect = this.getBoundingClientRect();
+            var ripple = document.createElement('span');
+            var size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = e.clientX - rect.left - size / 2 + 'px';
+            ripple.style.top = e.clientY - rect.top - size / 2 + 'px';
+            ripple.classList.add('ripple');
+            this.appendChild(ripple);
+            setTimeout(function() {
+                ripple.remove();
+            }, 600);
         });
     </script>
     <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my GitHub</a>
