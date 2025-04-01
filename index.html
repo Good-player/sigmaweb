@@ -5,31 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(Gen alpha) SIGMA WEBSITE</title>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        h1 {
+            margin-bottom: 10px;
+        }
+        label {
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .g-recaptcha {
+            margin-bottom: 20px;
+        }
         #submitBtn {
             background-color: grey;
-            pointer-events: none;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: not-allowed;
+            transition: background-color 0.3s ease;
+        }
+        #repoLink {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-decoration: none;
+            color: blue;
+            font-size: 16px;
+        }
+        #repoLink:hover {
+            text-decoration: underline;
+        }
+        iframe {
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .redirect-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .redirect-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1>Welcome to my skibidi sigma website</h1>
     <label>This is my first website ever created lol.</label>
-    <label>You need to done your sigma test in recaptcha and click submit for go to our hub. (WARNING:GEN ALPHA + BRAINROT!!!!!1!!1)</label>
+    <label>You need to complete your sigma test in reCAPTCHA and click submit to go to our hub. (WARNING: GEN ALPHA + BRAINROT!!!!!1!!1)</label>
     <form id="recaptcha-form" action="hub.html" method="GET">
         <div class="g-recaptcha" data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE" data-callback="recaptchaCallback" data-expired-callback="recaptchaExpired"></div>
         <button id="submitBtn" type="submit">Submit</button>
     </form>
+    <button class="redirect-button" onclick="window.location.href='indexold.html'">Go to Old Version</button>
     <script>
         function recaptchaCallback(response) {
             if (response) {
                 document.getElementById('submitBtn').style.backgroundColor = 'green';
+                document.getElementById('submitBtn').style.cursor = 'pointer';
                 document.getElementById('submitBtn').style.pointerEvents = 'auto';
             }
         }
 
         function recaptchaExpired() {
             document.getElementById('submitBtn').style.backgroundColor = 'grey';
+            document.getElementById('submitBtn').style.cursor = 'not-allowed';
             document.getElementById('submitBtn').style.pointerEvents = 'none';
         }
 
@@ -43,23 +111,7 @@
             }
         });
     </script>
-    <!-- Link to redirect to the GitHub repository -->
-    <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my github thing or idk</a>
-    <style>
-        #repoLink {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-decoration: none;
-            color: blue;
-            font-size: 16px;
-        }
-
-        #repoLink:hover {
-            text-decoration: underline;
-        }
-    </style>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=YTIAkzXUcAmJ9jAO&amp;start=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my GitHub</a>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=YTIAkzXUcAmJ9jAO&amp;start=0" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </body>
-
+</html>
