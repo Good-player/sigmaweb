@@ -7,4 +7,4 @@ Y/M/D
 3/13 Added a button to kilofilm
 3/17 Added devhub. Trying pong
 3/31 Nah im out with pong. Flappy block now avail.
-4/1 New UI in index
+4/1 Improved ui
