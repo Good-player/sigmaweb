@@ -150,23 +150,23 @@
     </div>
     <div class="content">
         <h1>Welcome to the Hub</h1>
-        <button class="bubbly-button" onclick="redirectWithEffect('index.html')">Main menu</button>
+        <button class="bubbly-button" onclick="location.href='index.html'">Main menu</button>
         <div class="description">Rage quit/Logout</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('hubdev.html')">Developers hub</button>
+        <button class="bubbly-button" onclick="location.href='hubdev.html'">Developers hub</button>
         <div class="description">Completely not done things will be on here. And this site background is bad. idc tbh</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('https://discord.gg/smnUbgZ22G', true)">DISCORD</button>
+        <button class="bubbly-button" onclick="window.open('https://discord.gg/smnUbgZ22G', '_blank')">DISCORD</button>
         <div class="description">Our official discord chat.</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('https://github.com/Good-player/sigmaweb/pulls', true)">Pulls</button>
+        <button class="bubbly-button" onclick="window.open('https://github.com/Good-player/sigmaweb/pulls', '_blank')">Pulls</button>
         <div class="description">If you need to fix some bugs (tbh no) or submit what do you want. Click the button and pull a request. (Ex:Feedback)</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('money.html')">Money Clicker Game</button>
+        <button class="bubbly-button" onclick="location.href='money.html'">Money Clicker Game</button>
         <div class="description">a clicker game</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('scam.html')">Fake VBUCKS/ROBUX Getter</button>
+        <button class="bubbly-button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
         <div class="description">Working omg free robux/vbucks. *jk</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('stock.html')">sigma invest GAME</button>
+        <button class="bubbly-button" onclick="location.href='stock.html'">sigma invest GAME</button>
         <div class="description">ONLY SIGMA RICH INVESTOR GUY ONLY!!!!!</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('https://sites.google.com/edu.sollentuna.se/kilofilm', true)">KiloFilm</button>
+        <button class="bubbly-button" onclick="window.open('https://sites.google.com/edu.sollentuna.se/kilofilm', '_blank')">KiloFilm</button>
         <div class="description">A website that my friend created. Is just a playing film website. A film about a trailer.</div>
-        <button class="bubbly-button" onclick="redirectWithEffect('flappybird.html')">Flappy block</button>
+        <button class="bubbly-button" onclick="location.href='flappybird.html'">Flappy block</button>
         <div class="description">Flappy bird from wish (block edition)</div>  
         <div class="update-log" id="updateLog">
             <h2>Update Log</h2>
@@ -205,19 +205,6 @@
                 e.target.style.setProperty('--x', x + 'px');
                 e.target.style.setProperty('--y', y + 'px');
             });
-        }
-
-        function redirectWithEffect(url, isExternal) {
-            var activeButton = document.querySelector('.bubbly-button.animate');
-            if (activeButton) {
-                setTimeout(function() {
-                    if (isExternal) {
-                        window.open(url, '_blank');
-                    } else {
-                        window.location.href = url;
-                    }
-                }, 700);
-            }
         }
     </script>
 </body>
