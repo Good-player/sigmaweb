@@ -232,3 +232,32 @@ function updatePipes() {
 
     pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
 }
+
+window.replayGame = function(id) {
+    const ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+    const record = ranking.find(rec => rec.id === id);
+    if (record) {
+        detailsModal.style.display = "none";
+        replayModal.style.display = "block";
+        let replayIndex = 0;
+        function replayLoop() {
+            if (replayIndex < record.gameHistory.length) {
+                const state = record.gameHistory[replayIndex];
+                replayCtx.clearRect(0, 0, replayCanvas.width, replayCanvas.height);
+                drawBlock(replayCtx, {x: 50, y: state.blockY, width: 20, height: 20});
+                drawPipes(replayCtx, state.pipes);
+                drawObstacles(replayCtx, state.obstacles || []); // Ensure obstacles are drawn in replay
+                drawCoins(replayCtx, state.coins || []); // Ensure coins are drawn in replay
+                replayCtx.fillStyle = 'black';
+                replayCtx.font = '20px Arial';
+                replayCtx.fillText(`Score: ${state.score}`, 10, 30);
+                if (replayIndex === record.gameHistory.length - 1) {
+                    gameOverDisplay.style.display = 'block';
+                }
+                replayIndex++;
+                requestAnimationFrame(replayLoop);
+            }
+        }
+        replayLoop();
+    }
+};
