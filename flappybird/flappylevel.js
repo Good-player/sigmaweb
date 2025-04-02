@@ -251,9 +251,6 @@ window.replayGame = function(id) {
                 replayCtx.fillStyle = 'black';
                 replayCtx.font = '20px Arial';
                 replayCtx.fillText(`Score: ${state.score}`, 10, 30);
-                if (state.popOutModalVisible) {
-                    showPopOutMessage(`Event at score ${state.score}`);
-                }
                 if (replayIndex === record.gameHistory.length - 1) {
                     gameOverDisplay.style.display = 'block';
                 }
