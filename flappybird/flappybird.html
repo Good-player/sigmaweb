@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Block</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="ranking">
+        <h3>
+            Ranking
+            <button onclick="clearAllRecords()">Clear All</button>
+        </h3>
+        <div id="rankingList"></div>
+    </div>
+    <div style="position: relative;">
+        <canvas id="gameCanvas" width="320" height="480"></canvas>
+        <div id="score">Score: 0</div>
+    </div>
+    <a id="backButton" href="hubdev.html">Back to Hub</a>
+
+    <!-- Modal for details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Modal for replay -->
+    <div id="replayModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Replay</h2>
+                <span class="close" onclick="closeReplayModal()">&times;</span>
+            </div>
+            <canvas id="replayCanvas" width="320" height="480"></canvas>
+            <div id="gameOver">GAME OVER</div>
+            <div id="victoryMessage">YOU WIN!!!1!1111?+1++1+1+</div>
+        </div>
+    </div>
+
+    <script src="flappybird.js"></script>
+</body>
+</html>
