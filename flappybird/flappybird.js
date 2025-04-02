@@ -9,6 +9,8 @@ const replayCanvas = document.getElementById('replayCanvas');
 const replayCtx = replayCanvas.getContext('2d');
 const gameOverDisplay = document.getElementById('gameOver');
 const victoryMessage = document.getElementById('victoryMessage');
+const popOutModal = document.getElementById('popOutModal');
+const popOutMessage = document.getElementById('popOutMessage');
 
 let block = {
     x: 50,
@@ -33,7 +35,10 @@ function saveState() {
     gameHistory.push({
         blockY: block.y,
         pipes: JSON.parse(JSON.stringify(pipes)),
-        score: score
+        obstacles: JSON.parse(JSON.stringify(additionalObstacles)),
+        coins: JSON.parse(JSON.stringify(coins)),
+        score: score,
+        popOutModalVisible: popOutModal.style.display === 'block'
     });
 }
 
@@ -66,86 +71,6 @@ function drawCoins(ctx, coins) {
         ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
         ctx.fill();
     });
-}
-
-function updatePipes() {
-    if (frame % 120 === 0) {
-        let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 20;
-        let gap = 150;
-        pipes.push({
-            x: canvas.width,
-            width: 20,
-            top: pipeHeight,
-            bottom: canvas.height - pipeHeight - gap,
-            passed: false,
-            verticalDirection: Math.random() < 0.5 ? 1 : -1,
-            color: getRandomColor()
-        });
-    }
-
-    pipes.forEach(pipe => {
-        pipe.x -= 2 * gameSpeed;
-        if (score >= 10) {
-            pipe.top += pipe.verticalDirection * pipeVerticalSpeed;
-            pipe.bottom -= pipe.verticalDirection * pipeVerticalSpeed;
-            if (pipe.top <= 20 || (canvas.height - pipe.bottom) <= 20) {
-                pipe.verticalDirection *= -1;
-            }
-        }
-
-        if (score >= 20) {
-            gameSpeed = 1.25;
-        }
-
-        if (score >= 30) {
-            pipe.width = Math.random() * 10 + 15; // Random width between 15 and 25
-        }
-    });
-
-    pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
-}
-
-function generateObstacles() {
-    if (score >= 30 && additionalObstacles.length === 0) {
-        additionalObstacles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            radius: 10,
-            xDirection: Math.random() < 0.5 ? 1 : -1,
-            yDirection: Math.random() < 0.5 ? 1 : -1
-        });
-    }
-}
-
-function updateObstacles() {
-    additionalObstacles.forEach(obstacle => {
-        obstacle.x += obstacle.xDirection * gameSpeed;
-        obstacle.y += obstacle.yDirection * gameSpeed;
-        if (obstacle.x - obstacle.radius <= 0 || obstacle.x + obstacle.radius >= canvas.width) {
-            obstacle.xDirection *= -1;
-        }
-        if (obstacle.y - obstacle.radius <= 0 || obstacle.y + obstacle.radius >= canvas.height) {
-            obstacle.yDirection *= -1;
-        }
-    });
-}
-
-function generateCoins() {
-    if (score >= 50 && coins.length === 0) {
-        coins.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            radius: 5
-        });
-    }
-}
-
-function updateCoins() {
-    coins.forEach(coin => {
-        coin.x -= 2 * gameSpeed;
-    });
-
-    coins = coins.filter(coin => coin.x + coin.radius > 0);
 }
 
 function updateBlock() {
@@ -181,6 +106,7 @@ function resetGame() {
     gameSpeed = 1;
     scoreDisplay.innerText = 'Score: ' + score;
     victoryMessage.style.display = "none";
+    popOutModal.style.display = "none";
 }
 
 function detectCollision() {
@@ -202,6 +128,8 @@ function detectCollision() {
             if (score >= 500) {
                 victoryMessage.style.display = "block";
                 resetGame();
+            } else if (score % 10 === 0) {
+                showPopOutMessage(`Event at score ${score}`);
             }
         }
     });
@@ -359,11 +287,14 @@ window.replayGame = function(id) {
                 replayCtx.clearRect(0, 0, replayCanvas.width, replayCanvas.height);
                 drawBlock(replayCtx, {x: 50, y: state.blockY, width: 20, height: 20});
                 drawPipes(replayCtx, state.pipes);
-                drawObstacles(replayCtx, additionalObstacles); // Ensure obstacles are drawn in replay
-                drawCoins(replayCtx, coins); // Ensure coins are drawn in replay
+                drawObstacles(replayCtx, state.obstacles || []); // Ensure obstacles are drawn in replay
+                drawCoins(replayCtx, state.coins || []); // Ensure coins are drawn in replay
                 replayCtx.fillStyle = 'black';
                 replayCtx.font = '20px Arial';
                 replayCtx.fillText(`Score: ${state.score}`, 10, 30);
+                if (state.popOutModalVisible) {
+                    showPopOutMessage(`Event at score ${state.score}`);
+                }
                 if (replayIndex === record.gameHistory.length - 1) {
                     gameOverDisplay.style.display = 'block';
                 }
@@ -391,6 +322,18 @@ function closeReplayModal() {
     gameOverDisplay.style.display = "none";
 }
 
+function showPopOutMessage(message) {
+    popOutMessage.innerText = message;
+    popOutModal.style.display = "block";
+    gameOver = true;
+}
+
+function resumeGame() {
+    popOutModal.style.display = "none";
+    gameOver = false;
+    loop();
+}
+
 // Close the modal if the user clicks outside of it
 window.onclick = function(event) {
     if (event.target == detailsModal) {
@@ -398,6 +341,10 @@ window.onclick = function(event) {
     } else if (event.target == replayModal) {
         replayModal.style.display = "none";
         gameOverDisplay.style.display = "none";
+    } else if (event.target == popOutModal) {
+        popOutModal.style.display = "none";
+        gameOver = false;
+        loop();
     }
 }
 
