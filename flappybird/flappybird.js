@@ -25,7 +25,6 @@ let frame = 0;
 let score = 0;
 let gameOver = false;
 let gameHistory = [];
-let pipeVerticalSpeed = 0.5;
 let additionalObstacles = [];
 let coins = [];
 let gameSpeed = 1;
@@ -93,9 +92,11 @@ function updatePipes() {
                 pipe.verticalDirection *= -1;
             }
         }
+
         if (score >= 20) {
             gameSpeed = 1.25;
         }
+
         if (score >= 30) {
             pipe.width = Math.random() * 10 + 15; // Random width between 15 and 25
         }
