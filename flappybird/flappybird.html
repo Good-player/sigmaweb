@@ -122,12 +122,6 @@
             text-align: center;
             display: none;
         }
-        #popOutMessage {
-            font-size: 20px;
-            color: blue;
-            text-align: center;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -165,18 +159,6 @@
             <canvas id="replayCanvas" width="320" height="480"></canvas>
             <div id="gameOver">GAME OVER</div>
             <div id="victoryMessage">YOU WIN!!!1!1111?+1++1+1+</div>
-        </div>
-    </div>
-
-    <!-- Pop-out message modal -->
-    <div id="popOutModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Event Description</h2>
-                <span class="close" onclick="resumeGame()">&times;</span>
-            </div>
-            <div id="popOutMessage">An event has occurred!</div>
-            <button onclick="resumeGame()">RESUME GAME</button>
         </div>
     </div>
 
