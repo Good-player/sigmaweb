@@ -116,12 +116,6 @@
             text-align: center;
             display: none;
         }
-        #victoryMessage {
-            font-size: 30px;
-            color: green;
-            text-align: center;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -158,7 +152,6 @@
             </div>
             <canvas id="replayCanvas" width="320" height="480"></canvas>
             <div id="gameOver">GAME OVER</div>
-            <div id="victoryMessage">YOU WIN!!!1!1111?+1++1+1+</div>
         </div>
     </div>
 
@@ -173,7 +166,6 @@
         const replayCanvas = document.getElementById('replayCanvas');
         const replayCtx = replayCanvas.getContext('2d');
         const gameOverDisplay = document.getElementById('gameOver');
-        const victoryMessage = document.getElementById('victoryMessage');
 
         let block = {
             x: 50,
@@ -192,8 +184,6 @@
         let gameHistory = [];
         let pipeVerticalSpeed = 0.5;
         let additionalObstacles = [];
-        let coins = [];
-        let gameSpeed = 1;
 
         function saveState() {
             gameHistory.push({
@@ -225,15 +215,6 @@
             });
         }
 
-        function drawCoins(ctx, coins) {
-            ctx.fillStyle = '#ff0';
-            coins.forEach(coin => {
-                ctx.beginPath();
-                ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
         function updatePipes() {
             if (frame % 120 === 0) {
                 let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 20;
@@ -244,13 +225,12 @@
                     top: pipeHeight,
                     bottom: canvas.height - pipeHeight - gap,
                     passed: false,
-                    verticalDirection: Math.random() < 0.5 ? 1 : -1,
-                    color: getRandomColor()
+                    verticalDirection: Math.random() < 0.5 ? 1 : -1
                 });
             }
 
             pipes.forEach(pipe => {
-                pipe.x -= 2 * gameSpeed;
+                pipe.x -= 2;
                 if (score >= 25) {
                     pipe.top += pipe.verticalDirection * pipeVerticalSpeed;
                     pipe.bottom -= pipe.verticalDirection * pipeVerticalSpeed;
@@ -259,9 +239,6 @@
                     }
                 }
                 if (score >= 50) {
-                    gameSpeed = 1.25;
-                }
-                if (score >= 75) {
                     pipe.width = Math.random() * 10 + 15; // Random width between 15 and 25
                 }
             });
@@ -283,8 +260,8 @@
 
         function updateObstacles() {
             additionalObstacles.forEach(obstacle => {
-                obstacle.x += obstacle.xDirection * gameSpeed;
-                obstacle.y += obstacle.yDirection * gameSpeed;
+                obstacle.x += obstacle.xDirection;
+                obstacle.y += obstacle.yDirection;
                 if (obstacle.x - obstacle.radius <= 0 || obstacle.x + obstacle.radius >= canvas.width) {
                     obstacle.xDirection *= -1;
                 }
@@ -292,24 +269,6 @@
                     obstacle.yDirection *= -1;
                 }
             });
-        }
-
-        function generateCoins() {
-            if (score >= 125 && coins.length === 0) {
-                coins.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: 5
-                });
-            }
-        }
-
-        function updateCoins() {
-            coins.forEach(coin => {
-                coin.x -= 2 * gameSpeed;
-            });
-
-            coins = coins.filter(coin => coin.x + coin.radius > 0);
         }
 
         function updateBlock() {
@@ -341,10 +300,7 @@
             score = 0;
             gameHistory = [];
             additionalObstacles = [];
-            coins = [];
-            gameSpeed = 1;
             scoreDisplay.innerText = 'Score: ' + score;
-            victoryMessage.style.display = "none";
         }
 
         function detectCollision() {
@@ -363,10 +319,6 @@
                     score++;
                     pipe.passed = true;
                     scoreDisplay.innerText = 'Score: ' + score;
-                    if (score >= 500) {
-                        victoryMessage.style.display = "block";
-                        resetGame();
-                    }
                 }
             });
 
@@ -382,18 +334,6 @@
                     resetGame();
                 }
             });
-
-            coins.forEach(coin => {
-                const dx = block.x + block.width / 2 - coin.x;
-                const dy = block.y + block.height / 2 - coin.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < block.width / 2 + coin.radius) {
-                    score += 5; // Bonus points for collecting coins
-                    coin.collected = true;
-                }
-            });
-
-            coins = coins.filter(coin => !coin.collected);
         }
 
         function draw() {
@@ -401,7 +341,6 @@
             drawBlock(ctx, block);
             drawPipes(ctx, pipes);
             drawObstacles(ctx, additionalObstacles);
-            drawCoins(ctx, coins);
         }
 
         function update() {
@@ -409,9 +348,6 @@
             updateBlock();
             updatePipes();
             updateObstacles();
-            updateCoins();
-            generateObstacles();
-            generateCoins();
             detectCollision();
             saveState();
         }
@@ -524,7 +460,48 @@
                         drawBlock(replayCtx, {x: 50, y: state.blockY, width: 20, height: 20});
                         drawPipes(replayCtx, state.pipes);
                         drawObstacles(replayCtx, additionalObstacles); // Ensure obstacles are drawn in replay
-                        drawCoins(replayCtx, coins); // Ensure coins are drawn in replay
                         replayCtx.fillStyle = 'black';
                         replayCtx.font = '20px Arial';
-                        replayCtx.fillText(`Score: ${state.score}`, 10, 
+                        replayCtx.fillText(`Score: ${state.score}`, 10, 30);
+                        if (replayIndex === record.gameHistory.length - 1) {
+                            gameOverDisplay.style.display = 'block';
+                        }
+                        replayIndex++;
+                        requestAnimationFrame(replayLoop);
+                    }
+                }
+                replayLoop();
+            }
+        };
+
+        window.clearAllRecords = function() {
+            if (confirm('Are you sure you want to delete all records?')) {
+                localStorage.removeItem('ranking');
+                displayRanking();
+            }
+        };
+
+        function closeModal() {
+            detailsModal.style.display = "none";
+        }
+
+        function closeReplayModal() {
+            replayModal.style.display = "none";
+            gameOverDisplay.style.display = "none";
+        }
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = function(event) {
+            if (event.target == detailsModal) {
+                detailsModal.style.display = "none";
+            } else if (event.target == replayModal) {
+                replayModal.style.display = "none";
+                gameOverDisplay.style.display = "none";
+            }
+        }
+
+        displayRanking();
+        loop();
+    </script>
+</body>
+</html>
