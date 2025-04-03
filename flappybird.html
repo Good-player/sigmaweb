@@ -36,6 +36,17 @@
             font-size: 20px;
             color: #000;
         }
+        #pauseButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff9800;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        #pauseButton:hover {
+            background-color: #e68900;
+        }
         #ranking {
             position: absolute;
             left: 10px;
@@ -130,6 +141,7 @@
         <canvas id="gameCanvas" width="320" height="480"></canvas>
         <div id="score">Score: 0</div>
     </div>
+    <button id="pauseButton" onclick="togglePause()">Pause</button>
     <a id="backButton" href="hubdev.html">Back to Hub</a>
 
     <!-- Modal for details -->
@@ -181,9 +193,8 @@
         let frame = 0;
         let score = 0;
         let gameOver = false;
+        let paused = false;
         let gameHistory = [];
-        let pipeVerticalSpeed = 0.5;
-        let additionalObstacles = [];
 
         function saveState() {
             gameHistory.push({
@@ -206,15 +217,6 @@
             });
         }
 
-        function drawObstacles(ctx, obstacles) {
-            ctx.fillStyle = '#f00';
-            obstacles.forEach(obstacle => {
-                ctx.beginPath();
-                ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
         function updatePipes() {
             if (frame % 120 === 0) {
                 let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 20;
@@ -225,50 +227,23 @@
                     top: pipeHeight,
                     bottom: canvas.height - pipeHeight - gap,
                     passed: false,
-                    verticalDirection: Math.random() < 0.5 ? 1 : -1
+                    direction: (score >= 25) ? ((Math.random() > 0.5) ? 1 : -1) : 0,
+                    speed: (score >= 50) ? 2 : 1
                 });
             }
 
             pipes.forEach(pipe => {
                 pipe.x -= 2;
                 if (score >= 25) {
-                    pipe.top += pipe.verticalDirection * pipeVerticalSpeed;
-                    pipe.bottom -= pipe.verticalDirection * pipeVerticalSpeed;
-                    if (pipe.top <= 20 || (canvas.height - pipe.bottom) <= 20) {
-                        pipe.verticalDirection *= -1;
+                    pipe.top += pipe.direction * ((score >= 50) ? 2 : 1);
+                    pipe.bottom -= pipe.direction * ((score >= 50) ? 2 : 1);
+                    if (pipe.top <= 0 || pipe.bottom <= 0) {
+                        pipe.direction *= -1;
                     }
-                }
-                if (score >= 50) {
-                    pipe.width = Math.random() * 10 + 15; // Random width between 15 and 25
                 }
             });
 
             pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
-        }
-
-        function generateObstacles() {
-            if (score >= 75 && additionalObstacles.length === 0) {
-                additionalObstacles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: 10,
-                    xDirection: Math.random() < 0.5 ? 1 : -1,
-                    yDirection: Math.random() < 0.5 ? 1 : -1
-                });
-            }
-        }
-
-        function updateObstacles() {
-            additionalObstacles.forEach(obstacle => {
-                obstacle.x += obstacle.xDirection;
-                obstacle.y += obstacle.yDirection;
-                if (obstacle.x - obstacle.radius <= 0 || obstacle.x + obstacle.radius >= canvas.width) {
-                    obstacle.xDirection *= -1;
-                }
-                if (obstacle.y - obstacle.radius <= 0 || obstacle.y + obstacle.radius >= canvas.height) {
-                    obstacle.yDirection *= -1;
-                }
-            });
         }
 
         function updateBlock() {
@@ -299,7 +274,6 @@
             gameOver = false;
             score = 0;
             gameHistory = [];
-            additionalObstacles = [];
             scoreDisplay.innerText = 'Score: ' + score;
         }
 
@@ -321,35 +295,22 @@
                     scoreDisplay.innerText = 'Score: ' + score;
                 }
             });
-
-            additionalObstacles.forEach(obstacle => {
-                const dx = block.x + block.width / 2 - obstacle.x;
-                const dy = block.y + block.height / 2 - obstacle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < block.width / 2 + obstacle.radius) {
-                    gameOver = true;
-                    if (score > 0) {
-                        saveScore();
-                    }
-                    resetGame();
-                }
-            });
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBlock(ctx, block);
             drawPipes(ctx, pipes);
-            drawObstacles(ctx, additionalObstacles);
         }
 
         function update() {
-            frame++;
-            updateBlock();
-            updatePipes();
-            updateObstacles();
-            detectCollision();
-            saveState();
+            if (!paused) {
+                frame++;
+                updateBlock();
+                updatePipes();
+                detectCollision();
+                saveState();
+            }
         }
 
         function loop() {
@@ -459,7 +420,6 @@
                         replayCtx.clearRect(0, 0, replayCanvas.width, replayCanvas.height);
                         drawBlock(replayCtx, {x: 50, y: state.blockY, width: 20, height: 20});
                         drawPipes(replayCtx, state.pipes);
-                        drawObstacles(replayCtx, additionalObstacles); // Ensure obstacles are drawn in replay
                         replayCtx.fillStyle = 'black';
                         replayCtx.font = '20px Arial';
                         replayCtx.fillText(`Score: ${state.score}`, 10, 30);
@@ -481,6 +441,11 @@
             }
         };
 
+        function togglePause() {
+            paused = !paused;
+            document.getElementById('pauseButton').innerText = paused ? 'Resume' : 'Pause';
+        }
+
         function closeModal() {
             detailsModal.style.display = "none";
         }
@@ -498,6 +463,13 @@
                 replayModal.style.display = "none";
                 gameOverDisplay.style.display = "none";
             }
+        }
+
+        displayRanking();
+        loop();
+    </script>
+</body>
+</html>
         }
 
         displayRanking();
