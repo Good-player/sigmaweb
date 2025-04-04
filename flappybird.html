@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flappy Block</title>
     <style>
         body {
@@ -148,7 +147,7 @@
     </div>
     <button id="pauseButton" onclick="togglePause()">Pause</button>
     <a id="backButton" href="hubdev.html">Back to Hub</a>
-    <div id="controls">Press Space to jump, numbers or click to pause/resume</div>
+    <div id="controls">Press Space to jump, numbers or click pause button to pause/resume</div>
 
     <!-- Modal for details -->
     <div id="detailsModal" class="modal">
@@ -173,6 +172,7 @@
         </div>
     </div>
 
+    <script src="flappylevel.js"></script>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -299,6 +299,7 @@
                     score++;
                     pipe.passed = true;
                     scoreDisplay.innerText = 'Score: ' + score;
+                    applyLevelChanges(score);
                 }
             });
         }
@@ -334,11 +335,6 @@
             if (e.code >= 'Digit1' && e.code <= 'Digit9') {
                 togglePause();
             }
-        });
-
-        window.addEventListener('mousedown', () => {
-            block.velocity = block.lift;
-            togglePause();
         });
 
         function saveScore() {
