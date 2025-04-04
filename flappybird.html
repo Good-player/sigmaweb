@@ -51,6 +51,11 @@
             font-size: 18px;
             color: #000;
         }
+        #levelMessage {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #000;
+        }
         #ranking {
             position: absolute;
             left: 10px;
@@ -148,6 +153,7 @@
     <button id="pauseButton" onclick="togglePause()">Pause</button>
     <a id="backButton" href="hubdev.html">Back to Hub</a>
     <div id="controls">Press Space to jump, numbers or click pause button to pause/resume</div>
+    <div id="levelMessage"></div>
 
     <!-- Modal for details -->
     <div id="detailsModal" class="modal">
@@ -184,6 +190,7 @@
         const replayCanvas = document.getElementById('replayCanvas');
         const replayCtx = replayCanvas.getContext('2d');
         const gameOverDisplay = document.getElementById('gameOver');
+        const levelMessage = document.getElementById('levelMessage');
 
         let block = {
             x: 50,
