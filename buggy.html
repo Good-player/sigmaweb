@@ -39,8 +39,8 @@
       margin: 10px;
     }
 
-    #hubButton {
-      margin-top: 20px;
+    button {
+      margin: 10px;
       padding: 10px 20px;
       font-size: 18px;
       border: none;
@@ -52,8 +52,17 @@
 
     #gameOver {
       display: none;
-      font-size: 30px;
+      font-size: 24px;
+      padding: 20px;
       margin-top: 20px;
+      background-color: #200;
+      border: 2px dashed red;
+    }
+
+    #crashCountdown {
+      font-weight: bold;
+      font-size: 26px;
+      color: red;
     }
   </style>
 </head>
@@ -62,8 +71,14 @@
   <div id="score">Score: 0</div>
   <div id="timer">Time: 30</div>
   <div id="gameArea"></div>
-  <div id="gameOver">💥 Game Over!<br>Your final score: <span id="finalScore">0</span></div>
-  <button id="hubButton" onclick="location.href='hub.html'">Go to Hub</button>
+
+  <div id="gameOver">
+    <p>💥 <strong>OH NOSE, BUGS INVADING YOUR TACOS!!!!</strong></p>
+    <p>SAVE NOW: <button onclick="restartGame()">🔥 RESTART</button></p>
+    <p>But hero, you did at least <span id="finalScore">0</span>...<br>So yeah, <strong>THIS PAGE WILL CRASH IN <span id="crashCountdown">10</span></strong>!!!!!</p>
+    <p>QUICK CLICK RESTART or...</p>
+    <button onclick="location.href='hub.html'">😡 RAGE QUIT</button>
+  </div>
 
   <script>
     const gameArea = document.getElementById('gameArea');
@@ -71,6 +86,7 @@
     const timerDisplay = document.getElementById('timer');
     const gameOver = document.getElementById('gameOver');
     const finalScore = document.getElementById('finalScore');
+    const crashCountdown = document.getElementById('crashCountdown');
 
     let score = 0;
     let timeLeft = 30;
@@ -79,8 +95,12 @@
     function spawnBug() {
       const bug = document.createElement('div');
       bug.classList.add('bug');
-      bug.style.left = Math.random() * (window.innerWidth - 40) + 'px';
-      bug.style.top = Math.random() * (window.innerHeight - 140) + 'px';
+
+      // Ensure bug appears within view
+      const maxLeft = window.innerWidth - 50;
+      const maxTop = window.innerHeight - 180;
+      bug.style.left = Math.random() * maxLeft + 'px';
+      bug.style.top = Math.random() * maxTop + 'px';
 
       bug.onclick = () => {
         score++;
@@ -91,7 +111,6 @@
 
       gameArea.appendChild(bug);
 
-      // Auto remove bug after 2 seconds
       setTimeout(() => {
         if (gameArea.contains(bug)) {
           bug.remove();
@@ -109,10 +128,38 @@
         if (timeLeft <= 0) {
           clearInterval(gameInterval);
           clearInterval(timerCountdown);
-          gameOver.style.display = 'block';
-          finalScore.textContent = score;
+          endGame();
         }
       }, 1000);
+    }
+
+    function endGame() {
+      gameOver.style.display = 'block';
+      finalScore.textContent = score;
+
+      // Disable remaining bugs
+      const bugs = document.querySelectorAll('.bug');
+      bugs.forEach(bug => bug.remove());
+
+      // Start crash countdown
+      let crashTime = 10;
+      const crashTimer = setInterval(() => {
+        crashTime--;
+        crashCountdown.textContent = crashTime;
+        if (crashTime <= 0) {
+          clearInterval(crashTimer);
+          causeCrash();
+        }
+      }, 1000);
+    }
+
+    function causeCrash() {
+      // Intentionally crash the page
+      throw new Error("💥 BUG OVERLOAD - TACO FAILURE DETECTED 💀");
+    }
+
+    function restartGame() {
+      location.reload();
     }
 
     startGame();
