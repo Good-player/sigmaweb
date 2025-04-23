@@ -34,6 +34,7 @@
   <br>
   <canvas id="canvas" width="400" height="400"></canvas>
   <br>
+  <button onclick="savePicture()">Save as PNG</button>
   <button onclick="goToHub()">Back to Hub</button>
 
   <script>
@@ -46,7 +47,7 @@
       let hash = 0;
       for (let i = 0; i < seed.length; i++) {
         hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-        hash = hash & hash; // Convert to 32bit integer
+        hash = hash & hash;
       }
       return hash >>> 0;
     }
@@ -70,10 +71,8 @@
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
 
-      // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Generate some shapes
       for (let i = 0; i < 10; i++) {
         ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.6)`;
         ctx.beginPath();
@@ -82,9 +81,16 @@
       }
     }
 
+    function savePicture() {
+      const canvas = document.getElementById("canvas");
+      const link = document.createElement("a");
+      link.download = "seed-picture.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
     function goToHub() {
-      // Replace with actual hub URL if needed
-      window.location.href = "index.html";
+      window.location.href = "hub.html";
     }
   </script>
 </body>
