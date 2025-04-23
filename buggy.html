@@ -13,13 +13,10 @@
       border: 1px solid #ccc;
       margin-top: 20px;
     }
-    button, input {
+    button, input, select {
       margin: 5px;
       padding: 10px 20px;
       font-size: 1em;
-    }
-    input {
-      width: 300px;
     }
     .info {
       margin-top: 10px;
@@ -38,6 +35,21 @@
   <br>
   <button onclick="generateRandomSeed()">Random Seed</button>
   <button onclick="generatePicture()">Generate Picture</button>
+  <label>
+    <input type="checkbox" id="showSeed" checked />
+    Show Seed
+  </label>
+  <br>
+  <label>
+    Picture Size:
+    <select id="canvasSize">
+      <option value="200">200x200</option>
+      <option value="300">300x300</option>
+      <option value="400" selected>400x400</option>
+      <option value="500">500x500</option>
+      <option value="600">600x600</option>
+    </select>
+  </label>
   <br>
   <canvas id="canvas" width="400" height="400"></canvas>
   <br>
@@ -73,53 +85,100 @@
       };
     }
 
+    function drawTextSmart(ctx, text, x, y, maxWidth, baseSize = 16) {
+      let fontSize = baseSize;
+      ctx.font = `${fontSize}px monospace`;
+      while (ctx.measureText(text).width > maxWidth && fontSize > 6) {
+        fontSize--;
+        ctx.font = `${fontSize}px monospace`;
+      }
+      ctx.fillText(text, x, y);
+    }
+
     function generatePicture() {
       const seed = document.getElementById("seedInput").value.trim();
       if (!seed) return alert("Please enter a seed!");
 
+      const showSeed = document.getElementById("showSeed").checked;
+      const size = parseInt(document.getElementById("canvasSize").value);
       const hash = hashSeed(seed);
       const rand = randomFromSeed(hash);
+
       const canvas = document.getElementById("canvas");
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext("2d");
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, size, size);
 
       // Background color
       ctx.fillStyle = `hsl(${rand()*360}, 50%, 90%)`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, size, size);
 
+      // Draw 5+ elements: circles, lines, rectangles, triangles, ellipses, stars
       // Circles
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 6; i++) {
         ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.6)`;
         ctx.beginPath();
-        ctx.arc(rand()*400, rand()*400, rand()*40 + 10, 0, Math.PI * 2);
+        ctx.arc(rand()*size, rand()*size, rand()*size/10 + 10, 0, Math.PI * 2);
         ctx.fill();
       }
 
       // Lines
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 4; i++) {
         ctx.strokeStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.7)`;
         ctx.lineWidth = rand()*5 + 1;
         ctx.beginPath();
-        ctx.moveTo(rand()*400, rand()*400);
-        ctx.lineTo(rand()*400, rand()*400);
+        ctx.moveTo(rand()*size, rand()*size);
+        ctx.lineTo(rand()*size, rand()*size);
         ctx.stroke();
       }
 
       // Rectangles
-      for (let i = 0; i < 6; i++) {
-        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.5)`;
-        ctx.fillRect(rand()*400, rand()*400, rand()*50 + 10, rand()*50 + 10);
+      for (let i = 0; i < 4; i++) {
+        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.4)`;
+        ctx.fillRect(rand()*size, rand()*size, rand()*size/5, rand()*size/5);
       }
 
-      // Add seed text
-      ctx.font = "16px monospace";
-      ctx.fillStyle = "#333";
-      ctx.fillText(`Seed: ${seed}`, 10, 380);
+      // Triangles
+      for (let i = 0; i < 3; i++) {
+        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.5)`;
+        ctx.beginPath();
+        ctx.moveTo(rand()*size, rand()*size);
+        ctx.lineTo(rand()*size, rand()*size);
+        ctx.lineTo(rand()*size, rand()*size);
+        ctx.closePath();
+        ctx.fill();
+      }
 
-      // Add time
+      // Stars
+      for (let i = 0; i < 2; i++) {
+        drawStar(ctx, rand()*size, rand()*size, 5, rand()*10 + 5, rand()*5 + 2, `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.8)`);
+      }
+
+      // Text: watermark always on, seed optionally
+      ctx.fillStyle = "#000";
+      const padding = 10;
+      const maxWidth = size - padding * 2;
+
+      drawTextSmart(ctx, "https://good-player.github.io/sigmaweb/", padding, size - padding, maxWidth, 12);
+      if (showSeed) drawTextSmart(ctx, `Seed: ${seed}`, padding, size - padding - 20, maxWidth, 14);
+
       const now = new Date().toLocaleString();
       document.getElementById("timeDisplay").innerText = `Generated on: ${now}`;
+    }
+
+    function drawStar(ctx, x, y, points, outerRadius, innerRadius, color) {
+      ctx.beginPath();
+      ctx.moveTo(x, y - outerRadius);
+      for (let i = 0; i < points * 2; i++) {
+        const angle = (Math.PI * i) / points;
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        ctx.lineTo(x + radius * Math.sin(angle), y - radius * Math.cos(angle));
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
     }
 
     function savePicture() {
@@ -131,7 +190,7 @@
     }
 
     function goToHub() {
-      window.location.href = "hub.html"; // Update as needed
+      window.location.href = "index.html"; // or your hub
     }
   </script>
 </body>
