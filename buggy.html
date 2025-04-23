@@ -6,6 +6,18 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      display: flex;
+    }
+    #historyPanel {
+      width: 250px;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 2px solid #ccc;
+      padding: 10px;
+      background: #f5f5f5;
+    }
+    #mainContent {
+      flex-grow: 1;
       text-align: center;
       padding: 20px;
     }
@@ -18,47 +30,63 @@
       padding: 10px 20px;
       font-size: 1em;
     }
-    .info {
+    .info, .fileSize {
       margin-top: 10px;
       font-size: 0.9em;
       color: #555;
     }
-    a {
-      color: #0077cc;
-      text-decoration: none;
+    .historyItem {
+      background: #fff;
+      border: 1px solid #ddd;
+      margin: 5px 0;
+      padding: 5px;
+      font-size: 0.85em;
+    }
+    .historyItem button {
+      font-size: 0.7em;
+      padding: 2px 6px;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>🎨 Random Picture Generators</h1>
-  <input type="text" id="seedInput" placeholder="Enter seed here" />
-  <br>
-  <button onclick="generateRandomSeed()">Random Seed</button>
-  <button onclick="generatePicture()">Generate Picture</button>
-  <label>
-    <input type="checkbox" id="showSeed" checked />
-    Show Seed
-  </label>
-  <br>
-  <label>
-    Picture Size:
-    <select id="canvasSize">
-      <option value="200">200x200</option>
-      <option value="300">300x300</option>
-      <option value="400" selected>400x400</option>
-      <option value="500">500x500</option>
-      <option value="600">600x600</option>
-    </select>
-  </label>
-  <br>
-  <canvas id="canvas" width="400" height="400"></canvas>
-  <br>
-  <button onclick="savePicture()">Save as PNG</button>
-  <button onclick="goToHub()">Back to Hub</button>
+  <div id="historyPanel">
+    <h3>📜 History</h3>
+    <div id="historyList"></div>
+  </div>
 
-  <div class="info">
-    <p id="timeDisplay"></p>
-    <p><a href="https://good-player.github.io/sigmaweb/" target="_blank">https://good-player.github.io/sigmaweb/</a> - Random picture generators</p>
+  <div id="mainContent">
+    <h1>🎨 Random Picture Generators</h1>
+    <input type="text" id="seedInput" placeholder="Enter seed here" />
+    <br>
+    <button onclick="generateRandomSeed()">Random Seed</button>
+    <button onclick="generatePicture()">Generate Picture</button>
+    <label>
+      <input type="checkbox" id="showSeed" checked />
+      Show Seed
+    </label>
+    <br>
+    <label>
+      Picture Size:
+      <select id="canvasSize">
+        <option value="200">200x200</option>
+        <option value="300">300x300</option>
+        <option value="400" selected>400x400</option>
+        <option value="500">500x500</option>
+        <option value="600">600x600</option>
+      </select>
+    </label>
+    <br>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <br>
+    <button onclick="savePicture()">Save as PNG</button>
+    <button onclick="goToHub()">Back to Hub</button>
+
+    <div class="fileSize" id="fileSizeDisplay"></div>
+    <div class="info">
+      <p id="timeDisplay"></p>
+      <p><a href="https://good-player.github.io/sigmaweb/" target="_blank">https://good-player.github.io/sigmaweb/</a> - Random picture generators</p>
+    </div>
   </div>
 
   <script>
@@ -95,79 +123,6 @@
       ctx.fillText(text, x, y);
     }
 
-    function generatePicture() {
-      const seed = document.getElementById("seedInput").value.trim();
-      if (!seed) return alert("Please enter a seed!");
-
-      const showSeed = document.getElementById("showSeed").checked;
-      const size = parseInt(document.getElementById("canvasSize").value);
-      const hash = hashSeed(seed);
-      const rand = randomFromSeed(hash);
-
-      const canvas = document.getElementById("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-
-      ctx.clearRect(0, 0, size, size);
-
-      // Background color
-      ctx.fillStyle = `hsl(${rand()*360}, 50%, 90%)`;
-      ctx.fillRect(0, 0, size, size);
-
-      // Draw 5+ elements: circles, lines, rectangles, triangles, ellipses, stars
-      // Circles
-      for (let i = 0; i < 6; i++) {
-        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.6)`;
-        ctx.beginPath();
-        ctx.arc(rand()*size, rand()*size, rand()*size/10 + 10, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Lines
-      for (let i = 0; i < 4; i++) {
-        ctx.strokeStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.7)`;
-        ctx.lineWidth = rand()*5 + 1;
-        ctx.beginPath();
-        ctx.moveTo(rand()*size, rand()*size);
-        ctx.lineTo(rand()*size, rand()*size);
-        ctx.stroke();
-      }
-
-      // Rectangles
-      for (let i = 0; i < 4; i++) {
-        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.4)`;
-        ctx.fillRect(rand()*size, rand()*size, rand()*size/5, rand()*size/5);
-      }
-
-      // Triangles
-      for (let i = 0; i < 3; i++) {
-        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.5)`;
-        ctx.beginPath();
-        ctx.moveTo(rand()*size, rand()*size);
-        ctx.lineTo(rand()*size, rand()*size);
-        ctx.lineTo(rand()*size, rand()*size);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      // Stars
-      for (let i = 0; i < 2; i++) {
-        drawStar(ctx, rand()*size, rand()*size, 5, rand()*10 + 5, rand()*5 + 2, `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.8)`);
-      }
-
-      // Text: watermark always on, seed optionally
-      ctx.fillStyle = "#000";
-      const padding = 10;
-      const maxWidth = size - padding * 2;
-
-      drawTextSmart(ctx, "https://good-player.github.io/sigmaweb/", padding, size - padding, maxWidth, 12);
-      if (showSeed) drawTextSmart(ctx, `Seed: ${seed}`, padding, size - padding - 20, maxWidth, 14);
-
-      const now = new Date().toLocaleString();
-      document.getElementById("timeDisplay").innerText = `Generated on: ${now}`;
-    }
-
     function drawStar(ctx, x, y, points, outerRadius, innerRadius, color) {
       ctx.beginPath();
       ctx.moveTo(x, y - outerRadius);
@@ -181,17 +136,112 @@
       ctx.fill();
     }
 
+    function generatePicture() {
+      const seed = document.getElementById("seedInput").value.trim();
+      if (!seed) return alert("Please enter a seed!");
+      const showSeed = document.getElementById("showSeed").checked;
+      const size = parseInt(document.getElementById("canvasSize").value);
+      const hash = hashSeed(seed);
+      const rand = randomFromSeed(hash);
+
+      const canvas = document.getElementById("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = `hsl(${rand()*360}, 50%, 90%)`;
+      ctx.fillRect(0, 0, size, size);
+
+      // CHAOS SHAPES
+      for (let i = 0; i < 10; i++) {
+        ctx.fillStyle = `rgba(${rand()*255},${rand()*255},${rand()*255},0.5)`;
+        ctx.beginPath();
+        const type = Math.floor(rand() * 5);
+        if (type === 0) ctx.arc(rand()*size, rand()*size, rand()*size/10, 0, 2 * Math.PI);
+        else if (type === 1) ctx.fillRect(rand()*size, rand()*size, rand()*size/8, rand()*size/8);
+        else if (type === 2) {
+          ctx.moveTo(rand()*size, rand()*size);
+          ctx.lineTo(rand()*size, rand()*size);
+          ctx.lineTo(rand()*size, rand()*size);
+          ctx.closePath();
+        } else drawStar(ctx, rand()*size, rand()*size, 5, rand()*10 + 5, rand()*5 + 2, ctx.fillStyle);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = `rgba(0,0,0,0.3)`;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(rand()*size, rand()*size);
+        ctx.lineTo(rand()*size, rand()*size);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#000";
+      const padding = 10;
+      const maxWidth = size - padding * 2;
+      drawTextSmart(ctx, "https://good-player.github.io/sigmaweb/", padding, size - padding, maxWidth, 12);
+      if (showSeed) drawTextSmart(ctx, `Seed: ${seed}`, padding, size - padding - 20, maxWidth, 14);
+
+      const now = new Date().toLocaleString();
+      document.getElementById("timeDisplay").innerText = `Generated on: ${now}`;
+
+      const entry = {
+        seed, size: size + "x" + size, time: now,
+        id: Date.now()
+      };
+      saveHistory(entry);
+      displayHistory();
+    }
+
     function savePicture() {
       const canvas = document.getElementById("canvas");
-      const link = document.createElement("a");
-      link.download = "seed-picture.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      canvas.toBlob(blob => {
+        const mb = (blob.size / 1024 / 1024).toFixed(3);
+        document.getElementById("fileSizeDisplay").innerText = `Image size: ${mb} MB`;
+        const link = document.createElement("a");
+        link.download = "seed-picture.png";
+        link.href = URL.createObjectURL(blob);
+        link.click();
+      });
+    }
+
+    function saveHistory(entry) {
+      const history = JSON.parse(localStorage.getItem("pictureHistory") || "[]");
+      history.push(entry);
+      localStorage.setItem("pictureHistory", JSON.stringify(history));
+    }
+
+    function deleteHistory(id) {
+      let history = JSON.parse(localStorage.getItem("pictureHistory") || "[]");
+      history = history.filter(entry => entry.id !== id);
+      localStorage.setItem("pictureHistory", JSON.stringify(history));
+      displayHistory();
+    }
+
+    function displayHistory() {
+      const history = JSON.parse(localStorage.getItem("pictureHistory") || "[]").reverse();
+      const container = document.getElementById("historyList");
+      container.innerHTML = "";
+      history.forEach(entry => {
+        const div = document.createElement("div");
+        div.className = "historyItem";
+        div.innerHTML = `
+          <strong>Seed:</strong> ${entry.seed}<br>
+          <strong>Size:</strong> ${entry.size}<br>
+          <strong>Time:</strong> ${entry.time}<br>
+          <button onclick="deleteHistory(${entry.id})">🗑️ Delete</button>
+        `;
+        container.appendChild(div);
+      });
     }
 
     function goToHub() {
-      window.location.href = "hub.html"; // or your hub
+      window.location.href = "hub.html";
     }
+
+    // Load history on start
+    displayHistory();
   </script>
 </body>
 </html>
