@@ -13,14 +13,12 @@
       border: 1px solid #ccc;
       margin-top: 20px;
     }
-    button {
+    button, input {
       margin: 5px;
       padding: 10px 20px;
       font-size: 1em;
     }
     input {
-      padding: 10px;
-      font-size: 1em;
       width: 300px;
     }
   </style>
@@ -67,18 +65,43 @@
 
       const hash = hashSeed(seed);
       const rand = randomFromSeed(hash);
-
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (let i = 0; i < 10; i++) {
+      // Background color
+      ctx.fillStyle = `hsl(${rand()*360}, 50%, 90%)`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw circles
+      for (let i = 0; i < 8; i++) {
         ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.6)`;
         ctx.beginPath();
-        ctx.arc(rand()*400, rand()*400, rand()*50 + 10, 0, Math.PI * 2);
+        ctx.arc(rand()*400, rand()*400, rand()*40 + 10, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // Draw lines
+      for (let i = 0; i < 5; i++) {
+        ctx.strokeStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.7)`;
+        ctx.lineWidth = rand()*5 + 1;
+        ctx.beginPath();
+        ctx.moveTo(rand()*400, rand()*400);
+        ctx.lineTo(rand()*400, rand()*400);
+        ctx.stroke();
+      }
+
+      // Draw rectangles
+      for (let i = 0; i < 6; i++) {
+        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.5)`;
+        ctx.fillRect(rand()*400, rand()*400, rand()*50 + 10, rand()*50 + 10);
+      }
+
+      // Add seed text
+      ctx.font = "16px monospace";
+      ctx.fillStyle = "#333";
+      ctx.fillText(`Seed: ${seed}`, 10, 390);
     }
 
     function savePicture() {
@@ -90,7 +113,7 @@
     }
 
     function goToHub() {
-      window.location.href = "hub.html";
+      window.location.href = "index.html"; // Update as needed
     }
   </script>
 </body>
