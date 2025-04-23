@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Seed-Based Picture Generator</title>
+  <title>Random Picture Generators</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,10 +21,19 @@
     input {
       width: 300px;
     }
+    .info {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #555;
+    }
+    a {
+      color: #0077cc;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
-  <h1>Seed Picture Generator</h1>
+  <h1>🎨 Random Picture Generators</h1>
   <input type="text" id="seedInput" placeholder="Enter seed here" />
   <br>
   <button onclick="generateRandomSeed()">Random Seed</button>
@@ -34,6 +43,11 @@
   <br>
   <button onclick="savePicture()">Save as PNG</button>
   <button onclick="goToHub()">Back to Hub</button>
+
+  <div class="info">
+    <p id="timeDisplay"></p>
+    <p><a href="https://good-player.github.io/sigmaweb/" target="_blank">https://good-player.github.io/sigmaweb/</a> - Random picture generators</p>
+  </div>
 
   <script>
     function generateRandomSeed() {
@@ -74,7 +88,7 @@
       ctx.fillStyle = `hsl(${rand()*360}, 50%, 90%)`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw circles
+      // Circles
       for (let i = 0; i < 8; i++) {
         ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.6)`;
         ctx.beginPath();
@@ -82,7 +96,7 @@
         ctx.fill();
       }
 
-      // Draw lines
+      // Lines
       for (let i = 0; i < 5; i++) {
         ctx.strokeStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.7)`;
         ctx.lineWidth = rand()*5 + 1;
@@ -92,7 +106,7 @@
         ctx.stroke();
       }
 
-      // Draw rectangles
+      // Rectangles
       for (let i = 0; i < 6; i++) {
         ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.5)`;
         ctx.fillRect(rand()*400, rand()*400, rand()*50 + 10, rand()*50 + 10);
@@ -101,7 +115,11 @@
       // Add seed text
       ctx.font = "16px monospace";
       ctx.fillStyle = "#333";
-      ctx.fillText(`Seed: ${seed}`, 10, 390);
+      ctx.fillText(`Seed: ${seed}`, 10, 380);
+
+      // Add time
+      const now = new Date().toLocaleString();
+      document.getElementById("timeDisplay").innerText = `Generated on: ${now}`;
     }
 
     function savePicture() {
@@ -113,7 +131,7 @@
     }
 
     function goToHub() {
-      window.location.href = "index.html"; // Update as needed
+      window.location.href = "hub.html"; // Update as needed
     }
   </script>
 </body>
