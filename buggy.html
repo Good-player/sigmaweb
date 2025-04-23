@@ -1,168 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Buggy.html - Bug Squasher 404</title>
+  <meta charset="UTF-8">
+  <title>Seed-Based Picture Generator</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #111;
-      color: #fff;
-      overflow: hidden;
+      font-family: Arial, sans-serif;
       text-align: center;
-    }
-
-    h1 {
-      margin-top: 10px;
-    }
-
-    #gameArea {
-      position: relative;
-      width: 100vw;
-      height: 90vh;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1e1e1e, #333);
-    }
-
-    .bug {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Antu_dialog-error.svg');
-      background-size: cover;
-      cursor: pointer;
-    }
-
-    #score, #timer {
-      font-size: 20px;
-      margin: 10px;
-    }
-
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 18px;
-      border: none;
-      background-color: #06c;
-      color: white;
-      cursor: pointer;
-      border-radius: 8px;
-    }
-
-    #gameOver {
-      display: none;
-      font-size: 24px;
       padding: 20px;
-      margin-top: 20px;
-      background-color: #200;
-      border: 2px dashed red;
     }
-
-    #crashCountdown {
-      font-weight: bold;
-      font-size: 26px;
-      color: red;
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+    }
+    input {
+      padding: 10px;
+      font-size: 1em;
+      width: 300px;
     }
   </style>
 </head>
 <body>
-  <h1>🐞 Bug Squasher 404</h1>
-  <div id="score">Score: 0</div>
-  <div id="timer">Time: 30</div>
-  <div id="gameArea"></div>
-
-  <div id="gameOver">
-    <p>💥 <strong>OH NOSE, BUGS INVADING YOUR TACOS!!!!</strong></p>
-    <p>SAVE NOW: <button onclick="restartGame()">🔥 RESTART</button></p>
-    <p>But hero, you did at least <span id="finalScore">0</span>...<br>So yeah, <strong>THIS PAGE WILL CRASH IN <span id="crashCountdown">10</span></strong>!!!!!</p>
-    <p>QUICK CLICK RESTART or...</p>
-    <button onclick="location.href='hub.html'">😡 RAGE QUIT</button>
-  </div>
+  <h1>Seed Picture Generator</h1>
+  <input type="text" id="seedInput" placeholder="Enter seed here" />
+  <br>
+  <button onclick="generateRandomSeed()">Random Seed</button>
+  <button onclick="generatePicture()">Generate Picture</button>
+  <br>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <br>
+  <button onclick="goToHub()">Back to Hub</button>
 
   <script>
-    const gameArea = document.getElementById('gameArea');
-    const scoreDisplay = document.getElementById('score');
-    const timerDisplay = document.getElementById('timer');
-    const gameOver = document.getElementById('gameOver');
-    const finalScore = document.getElementById('finalScore');
-    const crashCountdown = document.getElementById('crashCountdown');
+    function generateRandomSeed() {
+      const randomSeed = Math.random().toString(36).substring(2, 10);
+      document.getElementById("seedInput").value = randomSeed;
+    }
 
-    let score = 0;
-    let timeLeft = 30;
-    let gameInterval;
+    function hashSeed(seed) {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return hash >>> 0;
+    }
 
-    function spawnBug() {
-      const bug = document.createElement('div');
-      bug.classList.add('bug');
-
-      // Ensure bug appears within view
-      const maxLeft = window.innerWidth - 50;
-      const maxTop = window.innerHeight - 180;
-      bug.style.left = Math.random() * maxLeft + 'px';
-      bug.style.top = Math.random() * maxTop + 'px';
-
-      bug.onclick = () => {
-        score++;
-        scoreDisplay.textContent = 'Score: ' + score;
-        bug.remove();
-        new Audio('https://www.soundjay.com/button/beep-07.wav').play();
+    function randomFromSeed(seedHash) {
+      return () => {
+        seedHash ^= seedHash << 13;
+        seedHash ^= seedHash >> 17;
+        seedHash ^= seedHash << 5;
+        return (seedHash >>> 0) / 4294967296;
       };
-
-      gameArea.appendChild(bug);
-
-      setTimeout(() => {
-        if (gameArea.contains(bug)) {
-          bug.remove();
-        }
-      }, 2000);
     }
 
-    function startGame() {
-      gameInterval = setInterval(spawnBug, 600);
+    function generatePicture() {
+      const seed = document.getElementById("seedInput").value.trim();
+      if (!seed) return alert("Please enter a seed!");
 
-      const timerCountdown = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = 'Time: ' + timeLeft;
+      const hash = hashSeed(seed);
+      const rand = randomFromSeed(hash);
 
-        if (timeLeft <= 0) {
-          clearInterval(gameInterval);
-          clearInterval(timerCountdown);
-          endGame();
-        }
-      }, 1000);
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Generate some shapes
+      for (let i = 0; i < 10; i++) {
+        ctx.fillStyle = `rgba(${rand()*255}, ${rand()*255}, ${rand()*255}, 0.6)`;
+        ctx.beginPath();
+        ctx.arc(rand()*400, rand()*400, rand()*50 + 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
-    function endGame() {
-      gameOver.style.display = 'block';
-      finalScore.textContent = score;
-
-      // Disable remaining bugs
-      const bugs = document.querySelectorAll('.bug');
-      bugs.forEach(bug => bug.remove());
-
-      // Start crash countdown
-      let crashTime = 10;
-      const crashTimer = setInterval(() => {
-        crashTime--;
-        crashCountdown.textContent = crashTime;
-        if (crashTime <= 0) {
-          clearInterval(crashTimer);
-          causeCrash();
-        }
-      }, 1000);
+    function goToHub() {
+      // Replace with actual hub URL if needed
+      window.location.href = "index.html";
     }
-
-    function causeCrash() {
-      // Intentionally crash the page
-      throw new Error("💥 BUG OVERLOAD - TACO FAILURE DETECTED 💀");
-    }
-
-    function restartGame() {
-      location.reload();
-    }
-
-    startGame();
   </script>
 </body>
 </html>
