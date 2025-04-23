@@ -47,12 +47,27 @@
       padding: 2px 6px;
       margin-top: 5px;
     }
+    .historyTitle {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .favorite {
+      background-color: yellow;
+    }
+    .filters {
+      margin: 10px;
+    }
   </style>
 </head>
 <body>
   <div id="historyPanel">
     <h3>📜 History</h3>
+    <div class="historyTitle">Favorited</div>
+    <div id="favoritedList"></div>
+    <hr>
+    <div class="historyTitle">Unfavorited</div>
     <div id="historyList"></div>
+    <button onclick="clearAllHistory()">Clear All History</button>
   </div>
 
   <div id="mainContent">
@@ -62,8 +77,13 @@
     <button onclick="generateRandomSeed()">Random Seed</button>
     <button onclick="generatePicture()">Generate Picture</button>
     <label>
-      <input type="checkbox" id="showSeed" checked />
-      Show Seed
+      Chaos Level:
+      <select id="chaosLevel">
+        <option value="1">Simple</option>
+        <option value="2">Good</option>
+        <option value="3">Mess</option>
+        <option value="4">SUPER DUPER ULTRA GOD LORD</option>
+      </select>
     </label>
     <br>
     <label>
@@ -74,9 +94,17 @@
         <option value="400" selected>400x400</option>
         <option value="500">500x500</option>
         <option value="600">600x600</option>
+        <option value="1000">1000x1000</option>
+        <option value="custom">Custom (px)</option>
       </select>
+      <input type="number" id="customSize" placeholder="Custom width/height" style="display: none" />
     </label>
     <br>
+    <div class="filters">
+      <label><input type="checkbox" id="glowFilter" /> Glow</label>
+      <label><input type="checkbox" id="blurFilter" /> Blur</label>
+      <label><input type="checkbox" id="invertFilter" /> Invert</label>
+    </div>
     <canvas id="canvas" width="400" height="400"></canvas>
     <br>
     <button onclick="savePicture()">Save as PNG</button>
@@ -139,8 +167,9 @@
     function generatePicture() {
       const seed = document.getElementById("seedInput").value.trim();
       if (!seed) return alert("Please enter a seed!");
-      const showSeed = document.getElementById("showSeed").checked;
-      const size = parseInt(document.getElementById("canvasSize").value);
+      const chaosLevel = parseInt(document.getElementById("chaosLevel").value);
+      const showSeed = true; // Always show seed in image
+      const size = getCanvasSize();
       const hash = hashSeed(seed);
       const rand = randomFromSeed(hash);
 
@@ -154,7 +183,7 @@
       ctx.fillRect(0, 0, size, size);
 
       // CHAOS SHAPES
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < chaosLevel * 10; i++) {
         ctx.fillStyle = `rgba(${rand()*255},${rand()*255},${rand()*255},0.5)`;
         ctx.beginPath();
         const type = Math.floor(rand() * 5);
@@ -177,33 +206,41 @@
         ctx.stroke();
       }
 
+      // Filters
+      if (document.getElementById("glowFilter").checked) {
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "white";
+      }
+      if (document.getElementById("blurFilter").checked) {
+        ctx.filter = 'blur(5px)';
+      }
+      if (document.getElementById("invertFilter").checked) {
+        ctx.filter = 'invert(100%)';
+      }
+
       ctx.fillStyle = "#000";
       const padding = 10;
       const maxWidth = size - padding * 2;
       drawTextSmart(ctx, "https://good-player.github.io/sigmaweb/", padding, size - padding, maxWidth, 12);
-      if (showSeed) drawTextSmart(ctx, `Seed: ${seed}`, padding, size - padding - 20, maxWidth, 14);
+      if (showSeed) drawTextSmart(ctx, `Seed: ${seed.slice(0, 10)}...`, padding, size - padding - 20, maxWidth, 14);
 
       const now = new Date().toLocaleString();
       document.getElementById("timeDisplay").innerText = `Generated on: ${now}`;
 
       const entry = {
-        seed, size: size + "x" + size, time: now,
-        id: Date.now()
+        seed, size: size + "x" + size, time: now, chaosLevel: chaosLevel,
+        id: Date.now(), favorited: false
       };
       saveHistory(entry);
       displayHistory();
     }
 
-    function savePicture() {
-      const canvas = document.getElementById("canvas");
-      canvas.toBlob(blob => {
-        const mb = (blob.size / 1024 / 1024).toFixed(3);
-        document.getElementById("fileSizeDisplay").innerText = `Image size: ${mb} MB`;
-        const link = document.createElement("a");
-        link.download = "seed-picture.png";
-        link.href = URL.createObjectURL(blob);
-        link.click();
-      });
+    function getCanvasSize() {
+      const size = document.getElementById("canvasSize").value;
+      if (size === "custom") {
+        return parseInt(document.getElementById("customSize").value);
+      }
+      return parseInt(size);
     }
 
     function saveHistory(entry) {
@@ -219,20 +256,43 @@
       displayHistory();
     }
 
+    function toggleFavorite(id) {
+      const history = JSON.parse(localStorage.getItem("pictureHistory") || "[]");
+      const entry = history.find(e => e.id === id);
+      entry.favorited = !entry.favorited;
+      localStorage.setItem("pictureHistory", JSON.stringify(history));
+      displayHistory();
+    }
+
+    function clearAllHistory() {
+      localStorage.removeItem("pictureHistory");
+      displayHistory();
+    }
+
     function displayHistory() {
       const history = JSON.parse(localStorage.getItem("pictureHistory") || "[]").reverse();
-      const container = document.getElementById("historyList");
-      container.innerHTML = "";
+      const favoritedList = document.getElementById("favoritedList");
+      const historyList = document.getElementById("historyList");
+
+      favoritedList.innerHTML = '';
+      historyList.innerHTML = '';
+
       history.forEach(entry => {
         const div = document.createElement("div");
-        div.className = "historyItem";
+        div.className = `historyItem ${entry.favorited ? 'favorite' : ''}`;
         div.innerHTML = `
-          <strong>Seed:</strong> ${entry.seed}<br>
+          <strong>Seed:</strong> ${entry.seed.slice(0, 10)}...<br>
           <strong>Size:</strong> ${entry.size}<br>
           <strong>Time:</strong> ${entry.time}<br>
+          <strong>Chaotic:</strong> ${entry.chaosLevel}<br>
+          <button onclick="toggleFavorite(${entry.id})">${entry.favorited ? 'Unfavorite' : 'Favorite'}</button>
           <button onclick="deleteHistory(${entry.id})">🗑️ Delete</button>
         `;
-        container.appendChild(div);
+        if (entry.favorited) {
+          favoritedList.appendChild(div);
+        } else {
+          historyList.appendChild(div);
+        }
       });
     }
 
