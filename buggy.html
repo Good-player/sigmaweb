@@ -281,7 +281,7 @@
         const div = document.createElement("div");
         div.className = `historyItem ${entry.favorited ? 'favorite' : ''}`;
         div.innerHTML = `
-          <strong>Seed:</strong> ${entry.seed.slice(0, 10)}...<br>
+          <strong>Seed:</strong> ${entry.seed.length > 10 ? entry.seed.slice(0, 10) + "..." : entry.seed}<br>
           <strong>Size:</strong> ${entry.size}<br>
           <strong>Time:</strong> ${entry.time}<br>
           <strong>Chaotic:</strong> ${entry.chaosLevel}<br>
