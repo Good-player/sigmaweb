@@ -222,7 +222,7 @@
       const padding = 10;
       const maxWidth = size - padding * 2;
       drawTextSmart(ctx, "https://good-player.github.io/sigmaweb/", padding, size - padding, maxWidth, 12);
-      if (showSeed) drawTextSmart(ctx, `Seed: ${seed.slice(0, 10)}...`, padding, size - padding - 20, maxWidth, 14);
+      if (showSeed) drawTextSmart(ctx, `Seed: ${seed.slice(0, 10)}`, padding, size - padding - 20, maxWidth, 14);
 
       const now = new Date().toLocaleString();
       document.getElementById("timeDisplay").innerText = `Generated on: ${now}`;
