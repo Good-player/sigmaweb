@@ -5,180 +5,214 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hub</title>
     <link rel="icon" href="pic/icon.png" type="image/png">
-    <link href="ubuntu/Ubuntu-Regular.ttf" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @font-face {
-            font-family: 'Ubuntu';
-            src: url('ubuntu/Ubuntu-Regular.ttf') format('truetype');
-        }
+        /* Global Styles */
         body {
-            font-family: 'Ubuntu', sans-serif;
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: flex-start;
-            height: 100vh;
-            background-color: #f8faff;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            overflow-y: auto;
+            padding: 0;
+            background: #f4f4f6;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #111;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Header Section */
+        .poster-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #007aff, #00d2ff);
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .poster-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .poster-container img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Main Content */
+        .content {
+            max-width: 1200px;
+            margin: 40px auto;
             padding: 20px;
         }
-        .content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            margin-left: 20px;
-            flex-grow: 1;
+
+        .content h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
         }
+
+        /* Buttons */
         .bubbly-button {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'Inter', sans-serif;
             display: inline-block;
-            font-size: 1em;
-            padding: 1em 2em;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            -webkit-appearance: none;
-            appearance: none;
-            background-color: #0288d1;
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 15px 30px;
+            margin: 15px 10px;
+            background: linear-gradient(135deg, #007aff, #00d2ff);
             color: #fff;
-            border-radius: 4px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             position: relative;
-            transition: transform ease-in 0.1s, box-shadow ease-in 0.25s, background-color 0.3s;
-            box-shadow: 0 2px 25px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-        .bubbly-button:focus {
-            outline: 0;
-        }
+
         .bubbly-button:hover {
-            background: linear-gradient(45deg, #0288d1, #26c6da);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-            transform: scale(1.1);
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, #005eff, #00aaff);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
-        .bubbly-button:hover::before {
-            background: radial-gradient(circle at var(--x) var(--y), #26c6da, #0288d1);
-        }
-        .bubbly-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #0288d1, #26c6da);
-            z-index: -1;
-            transition: background 0.3s;
-        }
-        .bubbly-button::after {
-            position: absolute;
-            content: '';
-            display: block;
-            width: 140%;
-            height: 100%;
-            left: -20%;
-            z-index: -1000;
-            transition: all ease-in-out 0.5s;
-            background-repeat: no-repeat;
-        }
-        .bubbly-button:after {
-            display: none;
-            bottom: -75%;
-            background-image:  
-                radial-gradient(circle, #0288d1 20%, transparent 20%), 
-                radial-gradient(circle, #0288d1 20%, transparent 20%),
-                radial-gradient(circle,  transparent 10%, #0288d1 15%, transparent 20%),
-                radial-gradient(circle, #0288d1 20%, transparent 20%),
-                radial-gradient(circle, #0288d1 20%, transparent 20%),
-                radial-gradient(circle, #0288d1 20%, transparent 20%),
-                radial-gradient(circle, #0288d1 20%, transparent 20%);
-            background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
-        }
-        .bubbly-button:active {
-            transform: scale(0.9);
-            background-color: darken(#0288d1, 5%);
-            box-shadow: 0 2px 25px rgba(0, 0, 0, 0.2);
-        }
-        .bubbly-button.animate:before {
-            display: block;
-            animation: topBubbles ease-in-out 0.75s forwards;
-        }
-        .bubbly-button.animate:after {
-            display: block;
-            animation: bottomBubbles ease-in-out 0.75s forwards;
-        }
-        @keyframes topBubbles {
-            0% {
-                background-position: 5% 90%, 10% 90%, 10% 90%, 15% 90%, 25% 90%, 25% 90%, 40% 90%, 55% 90%, 70% 90%;
-            }
-            50% {
-                background-position: 0% 80%, 0% 20%, 10% 40%, 20% 0%, 30% 30%, 22% 50%, 50% 50%, 65% 20%, 90% 30%;
-            }
-            100% {
-                background-position: 0% 70%, 0% 10%, 10% 30%, 20% -10%, 30% 20%, 22% 40%, 50% 40%, 65% 10%, 90% 20%;
-                background-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
-            }
-        }
-        @keyframes bottomBubbles {
-            0% {
-                background-position: 10% -10%, 30% 10%, 55% -10%, 70% -10%, 85% -10%, 70% -10%, 70% 0%;
-            }
-            50% {
-                background-position: 0% 80%, 20% 80%, 45% 60%, 60% 100%, 75% 70%, 95% 60%, 105% 0%;
-            }
-            100% {
-                background-position: 0% 90%, 20% 90%, 45% 70%, 60% 110%, 75% 80%, 95% 70%, 110% 10%;
-                background-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
-            }
-        }
-        .update-log {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+        /* Descriptions */
+        .description {
+            font-size: 1em;
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
             max-width: 600px;
-            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Card Layouts */
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        /* Footer */
+        .update-log {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #007aff;
+            color: #fff;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .update-log h2 {
+            margin-bottom: 20px;
+        }
+
+        .update-log pre {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div class="poster-container">
-        <img src="poster.jpg" alt="Poster" class="poster" onclick="location.href='https://store.steampowered.com/app/3554820/XELVITA/'">
+        <img src="poster.jpg" alt="Poster" onclick="location.href='https://store.steampowered.com/app/3554820/XELVITA/'">
     </div>
     <div class="content">
         <h1>Welcome to the Hub</h1>
-        <button class="bubbly-button" onclick="location.href='index.html'">Main menu</button>
-        <div class="description">Rage quit/Logout</div>
-        <button class="bubbly-button" onclick="location.href='hubdev.html'">Developers hub</button>
-        <div class="description">Completely not done things will be on here. And this site background is bad. idc tbh</div>
-        <button class="bubbly-button" onclick="window.open('https://discord.gg/smnUbgZ22G', '_blank')">DISCORD</button>
-        <div class="description">Our official discord chat.</div>
-        <button class="bubbly-button" onclick="window.open('https://github.com/Good-player/sigmaweb/pulls', '_blank')">Pulls</button>
-        <div class="description">If you need to fix some bugs (tbh no) or submit what do you want. Click the button and pull a request. (Ex:Feedback)</div>
-        <button class="bubbly-button" onclick="location.href='money.html'">Money Clicker Game</button>
-        <div class="description">a clicker game</div>
-        <button class="bubbly-button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
-        <div class="description">Working omg free robux/vbucks. *jk</div>
-        <button class="bubbly-button" onclick="location.href='stock.html'">sigma invest GAME</button>
-        <div class="description">ONLY SIGMA RICH INVESTOR GUY ONLY!!!!!</div>
-        <button class="bubbly-button" onclick="window.open('https://sites.google.com/edu.sollentuna.se/kilofilm', '_blank')">KiloFilm</button>
-        <div class="description">A website that my friend created. Is just a playing film website. A film about a trailer.</div>
-        <button class="bubbly-button" onclick="location.href='flappybird/flappybird.html'">Flappy block (broke)</button>
-        <div class="description">Flappy bird from wish (block edition and broke)</div>  
-        <button class="bubbly-button" onclick="location.href='flappybird.html'">Flappy block</button>
-        <div class="description">Flappy brid from wish</div>
-        <button class="bubbly-button" onclick="location.href='buggy.html'">Random picture generator</button>
-        <div class="description">Totaly waste of time of doing this.</div>
-        <button class="bubbly-button" onclick="window.open('https://good-player.github.io/sigmaweb-pro/', '_blank')">Sigmaweb PRO</button>
-        <div class="description">Sigmaweb Pro Edition. (On dev)</div>
-        <div class="update-log" id="updateLog">
-            <h2>Update Log</h2>
-            <pre id="logContent">Loading...</pre>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='index.html'">Main menu</button>
+            <p class="description">Rage quit/Logout</p>
+        </div>
+        
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='hubdev.html'">Developers hub</button>
+            <p class="description">Completely not done things will be on here. And this site background is bad. idc tbh</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="window.open('https://discord.gg/smnUbgZ22G', '_blank')">DISCORD</button>
+            <p class="description">Our official discord chat.</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="window.open('https://github.com/Good-player/sigmaweb/pulls', '_blank')">Pulls</button>
+            <p class="description">If you need to fix some bugs (tbh no) or submit what do you want. Click the button and pull a request. (Ex:Feedback)</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='money.html'">Money Clicker Game</button>
+            <p class="description">a clicker game</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
+            <p class="description">Working omg free robux/vbucks. *jk</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='stock.html'">sigma invest GAME</button>
+            <p class="description">ONLY SIGMA RICH INVESTOR GUY ONLY!!!!!</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="window.open('https://sites.google.com/edu.sollentuna.se/kilofilm', '_blank')">KiloFilm</button>
+            <p class="description">A website that my friend created. Is just a playing film website. A film about a trailer.</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='flappybird/flappybird.html'">Flappy block (broke)</button>
+            <p class="description">Flappy bird from wish (block edition and broke)</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="location.href='buggy.html'">Random picture generator</button>
+            <p class="description">Totaly waste of time of doing this.</p>
+        </div>
+
+        <div class="card">
+            <button class="bubbly-button" onclick="window.open('https://good-player.github.io/sigmaweb-pro/', '_blank')">Sigmaweb PRO</button>
+            <p class="description">Sigmaweb Pro Edition. (On dev)</p>
         </div>
     </div>
+
+    <div class="update-log" id="updateLog">
+        <h2>Update Log</h2>
+        <pre id="logContent">Loading...</pre>
+    </div>
+
     <script>
         fetch('blog.txt')
             .then(response => response.text())
@@ -189,29 +223,6 @@
                 document.getElementById('logContent').textContent = 'Error loading update log.';
                 console.error('Error fetching update log:', error);
             });
-
-        var animateButton = function(e) {
-            e.preventDefault;
-            //reset animation
-            e.target.classList.remove('animate');
-            e.target.classList.add('animate');
-            setTimeout(function(){
-                e.target.classList.remove('animate');
-            }, 700);
-        };
-
-        var bubblyButtons = document.getElementsByClassName("bubbly-button");
-
-        for (var i = 0; i < bubblyButtons.length; i++) {
-            bubblyButtons[i].addEventListener('click', animateButton, false);
-            bubblyButtons[i].addEventListener('mousemove', function(e) {
-                var rect = e.target.getBoundingClientRect();
-                var x = e.clientX - rect.left;
-                var y = e.clientY - rect.top;
-                e.target.style.setProperty('--x', x + 'px');
-                e.target.style.setProperty('--y', y + 'px');
-            });
-        }
     </script>
 </body>
 </html>
