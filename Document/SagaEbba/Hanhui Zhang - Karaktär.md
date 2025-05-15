@@ -1,0 +1,3 @@
+# Abobebas
+
+Abobebas är 18 år och gillar att resa. Han är en pojke och han är från Ohio i Amerikas. Han är inte bra på Engelska men han är bra på Finska. Han har en bästa kompis som heter Adedegogas. Adedegogas är en pojke som gillar att spela VR spel. Och gillar inte Bebebas för han är mobbare. Samma som Abobebas för han gillar inte mobbare också. Men en person som heter Bobebabibo alltid försöker att Abobebas och Adedegogas lukta lim. Abobebas gillar att bli arg och mobba på en vilken som helst person på Weirdoh Street. Och han bor på Abebobisgogogaga station. Ja, han bor på en station. I stationen lägger man ett personalrum. Där bor han.  
