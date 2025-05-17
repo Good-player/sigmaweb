@@ -37,14 +37,12 @@
       align-items: center;
       justify-content: center;
       margin: 48px 0 0 0;
-      /* Not too wide */
       max-width: 900px;
       width: 100%;
       min-height: 420px;
       background: #fff;
       border-radius: 20px;
       box-shadow: 0 4px 32px rgba(60,60,60,0.14);
-      /* Center the container vertically in viewport */
     }
     .sector {
       flex: 1 1 0;
@@ -74,24 +72,39 @@
       height: 1px;
       background: transparent;
     }
-    @media (max-width: 800px) {
-      .container {
-        flex-direction: column;
-        max-width: 98vw;
-      }
-      .spacer {
-        display: none;
-      }
-      .sector.left, .sector.right {
-        border-radius: 20px 20px 0 0;
-        align-items: center;
-        max-width: none;
-        width: 100%;
-      }
-      .sector.right {
-        border-radius: 0 0 20px 20px;
-        box-shadow: none;
-      }
+    .logo-poster-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .logo-wrap {
+      width: 92px;
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+    .logo-img {
+      width: 70px;
+      height: 70px;
+      display: block;
+      object-fit: contain;
+      border-radius: 50%;
+      background: #eee;
+    }
+    .poster-img {
+      width: 110px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+      background: #ddd;
+      display: block;
     }
     h1 {
       margin: 0 0 16px 0;
@@ -144,7 +157,6 @@
       margin-bottom: 18px;
       min-height: 78px;
       width: 100%;
-      /* Reserve space to avoid layout shift */
     }
     #submitBtn {
       width: 100%;
@@ -231,7 +243,6 @@
     #repoLink:focus-visible {
       outline: 2px solid #0056b3;
     }
-    /* Accessibility: Focus styles for all buttons and links */
     button:focus-visible, a:focus-visible {
       outline: 3px solid #fbc02d;
       outline-offset: 2px;
@@ -247,8 +258,22 @@
       .left iframe {
         width: 96vw;
       }
+      .logo-poster-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .poster-img {
+        width: 90vw;
+        max-width: 180px;
+        height: auto;
+      }
     }
-    /* High contrast for accessibility */
+    @media (max-width: 800px) {
+      .logo-wrap { margin-bottom: 12px; }
+      .sector.left, .sector.right {
+        padding: 24px 10px;
+      }
+    }
     @media (prefers-contrast: more) {
       body { background: #fff; color: #000; }
       #submitBtn { background: #222; color: #fff; }
@@ -260,6 +285,12 @@
 <body>
   <div class="container">
     <section class="sector left" aria-labelledby="main-title">
+      <div class="logo-poster-row">
+        <div class="logo-wrap">
+          <img src="/pic/logo.png" alt="SIGMA Website Logo" class="logo-img" width="70" height="70" loading="eager">
+        </div>
+        <img src="/poster.png" alt="SIGMA Website Poster" class="poster-img" width="110" height="80" loading="lazy">
+      </div>
       <h1 id="main-title">Welcome to my skibidi sigma website</h1>
       <div class="desc">This is my first website ever created lol.</div>
       <iframe
@@ -314,7 +345,6 @@
         recaptchaLoaded = true;
       }
     }
-    // Touch/scroll/keyboard triggers
     ['mousemove','touchstart','keydown','scroll'].forEach(ev =>
       window.addEventListener(ev, lazyLoadRecaptcha, {once:true, passive:true})
     );
@@ -351,7 +381,6 @@
       }
     }
 
-    // Recaptcha callbacks: enable/disable submit
     window.recaptchaCallback = function(response) {
       if (response) {
         const btn = document.getElementById('submitBtn');
@@ -372,7 +401,6 @@
       btn.style.cursor = 'not-allowed';
     };
 
-    // Prevent form submit if recaptcha not solved
     document.getElementById('recaptcha-form').addEventListener('submit', function(event) {
       if (!window.grecaptcha || grecaptcha.getResponse().length === 0) {
         event.preventDefault();
@@ -380,7 +408,6 @@
       }
     });
 
-    // Button ripple effect (accessible)
     document.getElementById('submitBtn').addEventListener('click', function(e) {
       if (!this.classList.contains('enabled')) return;
       var rect = this.getBoundingClientRect();
@@ -394,7 +421,6 @@
       setTimeout(function() { ripple.remove(); }, 600);
     });
 
-    // Recaptcha explicit render for lazy loading
     window.initRecaptcha = function() {
       if (window.grecaptcha && document.getElementById('g-recaptcha')) {
         grecaptcha.render('g-recaptcha', {
