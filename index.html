@@ -1,184 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>(Gen alpha) SIGMA WEBSITE</title>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f0f2f5;
-            color: #333;
-        }
-        h1 {
-            margin-bottom: 10px;
-        }
-        label {
-            margin-bottom: 20px;
-            display: block;
-            text-align: center;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .g-recaptcha {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        #submitBtn {
-            position: relative;
-            overflow: hidden;
-            background-color: grey;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: not-allowed;
-            transition: background-color 0.3s ease;
-        }
-        #submitBtn:focus {
-            outline: none;
-        }
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6);
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-        }
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        #repoLink {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-decoration: none;
-            color: blue;
-            font-size: 16px;
-        }
-        #repoLink:hover {
-            text-decoration: underline;
-        }
-        iframe {
-            margin-top: 20px;
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .redirect-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
-        }
-        .redirect-button:hover {
-            background-color: #0056b3;
-        }
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            background-color: green;
-            pointer-events: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+  <title>(Gen alpha) SIGMA WEBSITE</title>
+  <meta name="description" content="Welcome to my first SIGMA website. Complete the sigma reCAPTCHA test and explore the hub!">
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebSite",
+      "name": "SIGMA WEBSITE",
+      "url": "https://good-player.github.io/sigmaweb/"
+    }
+  </script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://www.google.com https://www.gstatic.com data:; script-src 'self' https://www.google.com/recaptcha/ https://cdnjs.cloudflare.com https://www.gstatic.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://www.youtube.com https://www.google.com;">
+  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"></noscript>
+  <style>
+    html { font-family: 'Roboto', Arial, sans-serif; }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #f0f2f5;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      margin: 48px 0 0 0;
+      /* Not too wide */
+      max-width: 900px;
+      width: 100%;
+      min-height: 420px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 32px rgba(60,60,60,0.14);
+      /* Center the container vertically in viewport */
+    }
+    .sector {
+      flex: 1 1 0;
+      min-width: 280px;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: transparent;
+    }
+    .sector.left {
+      align-items: flex-end;
+      border-radius: 20px 0 0 20px;
+      background: #f8fafc;
+    }
+    .sector.right {
+      align-items: flex-start;
+      border-radius: 0 20px 20px 0;
+      background: #fff;
+      box-shadow: -4px 0 18px -12px rgba(0,0,0,0.05);
+    }
+    .spacer {
+      width: 48px;
+      min-width: 48px;
+      height: 1px;
+      background: transparent;
+    }
+    @media (max-width: 800px) {
+      .container {
+        flex-direction: column;
+        max-width: 98vw;
+      }
+      .spacer {
+        display: none;
+      }
+      .sector.left, .sector.right {
+        border-radius: 20px 20px 0 0;
+        align-items: center;
+        max-width: none;
+        width: 100%;
+      }
+      .sector.right {
+        border-radius: 0 0 20px 20px;
+        box-shadow: none;
+      }
+    }
+    h1 {
+      margin: 0 0 16px 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0a1a54;
+      letter-spacing: 1px;
+      text-align: right;
+      text-shadow: 0 1px 1px #fff;
+    }
+    .desc {
+      font-size: 1rem;
+      color: #444;
+      margin: 0 0 12px 0;
+      text-align: right;
+      max-width: 340px;
+    }
+    .left iframe {
+      margin-top: 26px;
+      border: none;
+      border-radius: 9px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.10);
+      width: 320px;
+      max-width: 100%;
+      min-height: 180px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .form-block {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: #222;
+    }
+    .warn {
+      color: #c41d00;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      font-size: 0.98rem;
+    }
+    .g-recaptcha {
+      margin-bottom: 18px;
+      min-height: 78px;
+      width: 100%;
+      /* Reserve space to avoid layout shift */
+    }
+    #submitBtn {
+      width: 100%;
+      max-width: 220px;
+      min-height: 44px;
+      position: relative;
+      overflow: hidden;
+      background: #888;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: not-allowed;
+      outline: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.2px;
+    }
+    #submitBtn:focus-visible {
+      outline: 3px solid #0056b3;
+    }
+    #submitBtn.enabled {
+      background: #1d8f32;
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgba(30,180,90,0.11);
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+      z-index: 2;
+    }
+    @keyframes ripple {
+      to { transform: scale(3); opacity: 0; }
+    }
+    .redirect-button {
+      width: 100%;
+      max-width: 220px;
+      background: #0061f2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 0;
+      font-size: 1.08rem;
+      margin: 1.4rem 0 0 0;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .redirect-button:focus-visible {
+      outline: 3px solid #0056b3;
+    }
+    .redirect-button:hover,
+    .redirect-button:active {
+      background: #0056b3;
+    }
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background-color: #1d8f32;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #repoLink {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-decoration: underline;
+      color: #0061f2;
+      font-size: 1rem;
+      background: #fff;
+      border-radius: 8px;
+      padding: 3px 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      z-index: 99;
+    }
+    #repoLink:focus-visible {
+      outline: 2px solid #0056b3;
+    }
+    /* Accessibility: Focus styles for all buttons and links */
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid #fbc02d;
+      outline-offset: 2px;
+    }
+    @media (max-width: 480px) {
+      .container {
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .sector {
+        padding: 16px 6px;
+      }
+      .left iframe {
+        width: 96vw;
+      }
+    }
+    /* High contrast for accessibility */
+    @media (prefers-contrast: more) {
+      body { background: #fff; color: #000; }
+      #submitBtn { background: #222; color: #fff; }
+      .redirect-button { background: #222; color: #fff; }
+      #repoLink { color: #0000ee; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to my skibidi sigma website</h1>
-    <label>This is my first website ever created lol.</label>
-    <label>You need to complete your sigma test in reCAPTCHA and click submit to go to our hub. (WARNING: GEN ALPHA + BRAINROT!!!!!1!!1)</label>
-    <form id="recaptcha-form" action="hub.html" method="GET">
-        <div class="g-recaptcha" data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE" data-callback="recaptchaCallback" data-expired-callback="recaptchaExpired"></div>
-        <button id="submitBtn" type="submit">Submit</button>
-    </form>
-    <button class="redirect-button" onclick="window.location.href='indexold.html'">Go to Old Version</button>
-    <script>
-        function recaptchaCallback(response) {
-            if (response) {
-                document.getElementById('submitBtn').style.backgroundColor = 'green';
-                document.getElementById('submitBtn').style.cursor = 'pointer';
-                document.getElementById('submitBtn').style.pointerEvents = 'auto';
-                playAnimation();
-            }
-        }
+  <div class="container">
+    <section class="sector left" aria-labelledby="main-title">
+      <h1 id="main-title">Welcome to my skibidi sigma website</h1>
+      <div class="desc">This is my first website ever created lol.</div>
+      <iframe
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=YTIAkzXUcAmJ9jAO&amp;start=0"
+        title="Sigma YouTube video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        loading="lazy"
+        aria-label="Embedded YouTube video: Sigma"
+      ></iframe>
+    </section>
+    <div class="spacer"></div>
+    <section class="sector right">
+      <form id="recaptcha-form" class="form-block" action="hub.html" method="GET" autocomplete="off">
+        <label for="g-recaptcha" id="recaptcha-label">
+          Sigma Test: Please complete reCAPTCHA
+        </label>
+        <div class="warn" role="alert">
+          You need to complete your sigma test in reCAPTCHA and click submit to go to our hub.<br>
+          (WARNING: GEN ALPHA + BRAINROT!!!!!1!!1)
+        </div>
+        <div id="g-recaptcha" class="g-recaptcha"
+          data-sitekey="6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE"
+          data-callback="recaptchaCallback"
+          data-expired-callback="recaptchaExpired"
+          aria-labelledby="recaptcha-label"
+        ></div>
+        <button id="submitBtn" type="submit" aria-disabled="true" tabindex="0">Submit</button>
+      </form>
+      <button class="redirect-button" onclick="window.location.href='indexold.html'" aria-label="Go to Old Version">Go to Old Version</button>
+    </section>
+  </div>
+  <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io" rel="noopener" aria-label="Go to my GitHub">Go to my GitHub</a>
+  <script>
+    // Helper to load external scripts with async/defer
+    function loadScript(src, opts = {async: true, defer: true}) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        Object.assign(s, opts);
+        s.onload = resolve;
+        s.onerror = reject;
+        document.body.appendChild(s);
+      });
+    }
 
-        function recaptchaExpired() {
-            document.getElementById('submitBtn').style.backgroundColor = 'grey';
-            document.getElementById('submitBtn').style.cursor = 'not-allowed';
-            document.getElementById('submitBtn').style.pointerEvents = 'none';
-        }
+    // Load reCAPTCHA after user scroll/interact (facade/lazy)
+    let recaptchaLoaded = false;
+    function lazyLoadRecaptcha() {
+      if (!recaptchaLoaded) {
+        loadScript('https://www.google.com/recaptcha/api.js?onload=initRecaptcha&render=explicit', {async: true, defer: true});
+        recaptchaLoaded = true;
+      }
+    }
+    // Touch/scroll/keyboard triggers
+    ['mousemove','touchstart','keydown','scroll'].forEach(ev =>
+      window.addEventListener(ev, lazyLoadRecaptcha, {once:true, passive:true})
+    );
 
-        document.getElementById('recaptcha-form').addEventListener('submit', function(event) {
-            var recaptchaResponse = grecaptcha.getResponse();
-            if (recaptchaResponse.length === 0) {
-                event.preventDefault();
-                window.location.href = 'robotalert.html';
-            } else {
-                // Allow the form to be submitted normally
-            }
+    // Animate.js lazy load (only if user activates recaptcha)
+    window.playAnimation = function() {
+      if (!window.anime) {
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js').then(runAnimation);
+      } else {
+        runAnimation();
+      }
+    };
+    function runAnimation() {
+      var recaptchaElement = document.querySelector('.g-recaptcha');
+      for (var i = 0; i < 30; i++) {
+        var circle = document.createElement('div');
+        circle.classList.add('circle');
+        circle.style.width = '0px';
+        circle.style.height = '0px';
+        circle.style.left = '50%';
+        circle.style.top = '50%';
+        recaptchaElement.appendChild(circle);
+        anime({
+          targets: circle,
+          width: ['0px', '24px'],
+          height: ['0px', '24px'],
+          opacity: [1, 0],
+          translateX: function() { return anime.random(-120, 120) + 'px'; },
+          translateY: function() { return anime.random(-80, 80) + 'px'; },
+          duration: 1200,
+          easing: 'easeOutExpo',
+          complete: function(anim) { anim.targets[0].remove(); }
         });
+      }
+    }
 
-        function playAnimation() {
-            var recaptchaElement = document.querySelector('.g-recaptcha');
-            for (var i = 0; i < 50; i++) { // Increased number of circles
-                var circle = document.createElement('div');
-                circle.classList.add('circle');
-                circle.style.width = '0px';
-                circle.style.height = '0px';
-                circle.style.left = '50%';
-                circle.style.top = '50%';
-                recaptchaElement.appendChild(circle);
-                anime({
-                    targets: circle,
-                    width: ['0px', '30px'], // Smaller size
-                    height: ['0px', '30px'], // Smaller size
-                    opacity: [1, 0],
-                    translateX: function() { return anime.random(-200, 200) + 'px'; },
-                    translateY: function() { return anime.random(-200, 200) + 'px'; },
-                    duration: 2000,
-                    easing: 'easeOutExpo',
-                    complete: function(anim) {
-                        anim.targets[0].remove();
-                    }
-                });
-            }
-        }
+    // Recaptcha callbacks: enable/disable submit
+    window.recaptchaCallback = function(response) {
+      if (response) {
+        const btn = document.getElementById('submitBtn');
+        btn.classList.add('enabled');
+        btn.setAttribute('aria-disabled', 'false');
+        btn.style.pointerEvents = 'auto';
+        btn.style.backgroundColor = '#1d8f32';
+        btn.style.cursor = 'pointer';
+        window.playAnimation();
+      }
+    };
+    window.recaptchaExpired = function() {
+      const btn = document.getElementById('submitBtn');
+      btn.classList.remove('enabled');
+      btn.setAttribute('aria-disabled', 'true');
+      btn.style.pointerEvents = 'none';
+      btn.style.backgroundColor = '#888';
+      btn.style.cursor = 'not-allowed';
+    };
 
-        document.getElementById('submitBtn').addEventListener('click', function(e) {
-            var rect = this.getBoundingClientRect();
-            var ripple = document.createElement('span');
-            var size = Math.max(rect.width, rect.height);
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = e.clientX - rect.left - size / 2 + 'px';
-            ripple.style.top = e.clientY - rect.top - size / 2 + 'px';
-            ripple.classList.add('ripple');
-            this.appendChild(ripple);
-            setTimeout(function() {
-                ripple.remove();
-            }, 600);
+    // Prevent form submit if recaptcha not solved
+    document.getElementById('recaptcha-form').addEventListener('submit', function(event) {
+      if (!window.grecaptcha || grecaptcha.getResponse().length === 0) {
+        event.preventDefault();
+        window.location.href = 'robotalert.html';
+      }
+    });
+
+    // Button ripple effect (accessible)
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
+      if (!this.classList.contains('enabled')) return;
+      var rect = this.getBoundingClientRect();
+      var ripple = document.createElement('span');
+      var size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = e.clientX - rect.left - size / 2 + 'px';
+      ripple.style.top = e.clientY - rect.top - size / 2 + 'px';
+      ripple.classList.add('ripple');
+      this.appendChild(ripple);
+      setTimeout(function() { ripple.remove(); }, 600);
+    });
+
+    // Recaptcha explicit render for lazy loading
+    window.initRecaptcha = function() {
+      if (window.grecaptcha && document.getElementById('g-recaptcha')) {
+        grecaptcha.render('g-recaptcha', {
+          sitekey: '6LeEHukqAAAAAHniKmB_c2PTe5XrEgH-HFZtyLoE',
+          callback: recaptchaCallback,
+          'expired-callback': recaptchaExpired
         });
-    </script>
-    <a id="repoLink" href="https://github.com/Good-player/Good-player-github.io">Go to my GitHub</a>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=YTIAkzXUcAmJ9jAO&amp;start=0" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      }
+    };
+  </script>
 </body>
 </html>
