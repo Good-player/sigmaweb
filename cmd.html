@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Command Line (cmd.html)</title>
+    <style>
+        body {
+            background: #181818;
+            color: #f2f2f2;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            margin: 0;
+            padding: 0;
+        }
+        #container {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            background: #232323;
+            border-radius: 8px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.55);
+            padding: 24px 32px 32px 32px;
+        }
+        h2 {
+            color: #42c9ff;
+            margin-bottom: 16px;
+        }
+        #terminal {
+            min-height: 350px;
+            max-height: 480px;
+            background: #101010;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 1em;
+            line-height: 1.4;
+            margin-bottom: 16px;
+            scrollbar-width: thin;
+            scrollbar-color: #42c9ff #101010;
+        }
+        #terminal::-webkit-scrollbar {
+            width: 8px;
+            background: #101010;
+        }
+        #terminal::-webkit-scrollbar-thumb {
+            background: #42c9ff;
+            border-radius: 4px;
+        }
+        #input-line {
+            display: flex;
+        }
+        #prompt {
+            color: #42ff8b;
+            margin-right: 6px;
+        }
+        #cmdInput {
+            flex: 1;
+            background: #181818;
+            border: none;
+            color: #fff;
+            font-size: 1em;
+            font-family: inherit;
+            outline: none;
+        }
+        .cmd-output {
+            color: #f2f2f2;
+        }
+        .cmd-error {
+            color: #ff4242;
+        }
+        .cmd-success {
+            color: #42ff8b;
+        }
+        .cmd-info {
+            color: #42c9ff;
+        }
+        .cmd-warning {
+            color: #ffe042;
+        }
+        .cmd-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .cmd-table th, .cmd-table td {
+            border: 1px solid #333;
+            padding: 4px 8px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        .cmd-table th {
+            background: #21243a;
+            color: #42c9ff;
+        }
+        a {
+            color: #42c9ff;
+            text-decoration: underline;
+        }
+        .cmd-badge {
+            background: #444e;
+            color: #42c9ff;
+            border-radius: 4px;
+            padding: 0 6px;
+            font-size: 0.9em;
+            margin-left: 7px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h2>Command Line Interface</h2>
+        <div id="terminal"></div>
+        <div id="input-line">
+            <span id="prompt">&gt;</span>
+            <input type="text" id="cmdInput" autofocus autocomplete="off" placeholder="Type a command... (try /help)" />
+        </div>
+    </div>
+    <script>
+        // Utilities
+        function printOutput(html) {
+            const term = document.getElementById('terminal');
+            term.innerHTML += html + '<br>';
+            term.scrollTop = term.scrollHeight;
+        }
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[m];
+            });
+        }
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        // Advanced fake system info
+        function fakeSysInfo() {
+            // Simulate random realistic values for demo purposes
+            let cores = navigator.hardwareConcurrency || getRandomElement([2,4,6,8,12]);
+            let arch = getRandomElement(["x86_64", "arm64", "x86", "risc-v", "ppc64le"]);
+            let vendor = getRandomElement(["Intel", "AMD", "Apple", "Qualcomm", "IBM"]);
+            let model = getRandomElement([
+                "Core i7-12700K", "Ryzen 9 5900X", "Apple M2", "Xeon Gold 6230", "Snapdragon 8cx Gen3"
+            ]);
+            let cpuGHz = (Math.random() * 2 + 2.1).toFixed(2);
+            let cpuCache = getRandomElement([6144, 8192, 12288, 16384, 32768]) + " KB";
+            let cpuThreads = cores * getRandomElement([1,2]);
+            let cpuFeatures = "SSE4.2, AVX2, AES-NI, FMA3, VT-x, VT-d, HyperThreading, TurboBoost, ...";
+            let ramGB = getRandomElement([4, 8, 16, 32, 64]);
+            let ramSpeed = getRandomElement([2133, 2400, 2666, 2933, 3200, 4266]) + " MHz";
+            let ramType = getRandomElement(["LPDDR4X", "DDR4", "DDR5", "LPDDR5"]);
+            let ramUsed = (Math.random() * ramGB * 0.8).toFixed(1);
+            let sysUptime = Math.floor(Math.random()*48*3600); // seconds 0-48h
+            let upHours = Math.floor(sysUptime/3600), upMin = Math.floor((sysUptime%3600)/60), upSec = sysUptime%60;
+            let platform = navigator.platform || "Unknown";
+            let os = navigator.userAgentData ? (navigator.userAgentData.platform || "Unknown") : platform;
+            let screenRes = `${window.screen.width}x${window.screen.height}`;
+            let gpu = getRandomElement([
+                "NVIDIA RTX 3080", "AMD Radeon RX 6800", "Apple M2 GPU", "Intel UHD 770", "Qualcomm Adreno 690"
+            ]);
+            let gpuMem = getRandomElement([2,4,8,12,16]) + " GB";
+            let browser = navigator.userAgent;
+            let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            let lang = navigator.language;
+            let logicalDrives = [
+                {label: "C:", total: "512 GB", free: "147 GB"},
+                {label: "D:", total: "1 TB", free: "992 GB"}
+            ];
+            let battery = navigator.getBattery ? "Supported" : "Not supported";
+            // Simulated temperature
+            let cpuTemp = (Math.random()*40 + 35).toFixed(1) + " °C";
+            let ramTemp = (Math.random()*20 + 35).toFixed(1) + " °C";
+            let netSpeed = getRandomElement([100, 1000, 10000]) + " Mbps";
+            let macAddr = "xx:xx:xx:xx:xx:xx";
+            let ipv4 = "192.168.1." + Math.floor(Math.random()*254+1);
+            let ipv6 = "fe80::" + Math.floor(Math.random()*9999).toString(16) + ":abcd";
+            let host = window.location.hostname;
+            return `
+                <div class='cmd-info'><b>System Information</b> <span class='cmd-badge'>/cominfo</span></div>
+                <table class="cmd-table">
+                    <tr><th>CPU Vendor</th><td>${vendor}</td><th>Model</th><td>${model}</td></tr>
+                    <tr><th>Arch</th><td>${arch}</td><th>Cores</th><td>${cores}</td></tr>
+                    <tr><th>Threads</th><td>${cpuThreads}</td><th>Base Freq</th><td>${cpuGHz} GHz</td></tr>
+                    <tr><th>Cache</th><td>${cpuCache}</td><th>Features</th><td>${cpuFeatures}</td></tr>
+                    <tr><th>CPU Temp</th><td>${cpuTemp}</td><th>RAM Temp</th><td>${ramTemp}</td></tr>
+                    <tr><th>RAM Size</th><td>${ramGB} GB</td><th>Type</th><td>${ramType} @ ${ramSpeed}</td></tr>
+                    <tr><th>RAM Usage</th><td>${ramUsed} / ${ramGB} GB</td><th>Uptime</th><td>${upHours}h ${upMin}m ${upSec}s</td></tr>
+                    <tr><th>GPU</th><td>${gpu}</td><th>GPU VRAM</th><td>${gpuMem}</td></tr>
+                    <tr><th>Display</th><td>${screenRes}</td><th>Battery API</th><td>${battery}</td></tr>
+                    <tr><th>Network</th><td>IPv4: ${ipv4}<br>IPv6: ${ipv6}<br>MAC: ${macAddr}</td><th>Speed</th><td>${netSpeed}</td></tr>
+                    <tr><th>Drives</th><td colspan="3">${
+                        logicalDrives.map(d=>`${d.label} (${d.free}/${d.total} free)`).join(', ')
+                    }</td></tr>
+                    <tr><th>OS/Platform</th><td>${os}</td><th>Browser UA</th><td>${browser}</td></tr>
+                    <tr><th>Timezone</th><td>${timeZone}</td><th>Language</th><td>${lang}</td></tr>
+                    <tr><th>Hostname</th><td>${host}</td><th>Window size</th><td>${window.innerWidth}x${window.innerHeight}</td></tr>
+                </table>
+            `;
+        }
+
+        // More fun/advanced/interactive commands!
+        const commands = [
+            {
+                name: '/help',
+                desc: 'List all available commands and their descriptions.',
+                action: function() {
+                    let msg = "<div class='cmd-info'><b>Available Commands:</b><ul>";
+                    for (let cmd of commands) {
+                        msg += `<li><b>${cmd.name}</b>: ${cmd.desc}</li>`;
+                    }
+                    msg += "</ul></div>";
+                    printOutput(msg);
+                }
+            },
+            {
+                name: '/back',
+                desc: 'Redirects you to hub.html.',
+                action: function() {
+                    printOutput("<div class='cmd-info'>Redirecting to hub.html ...</div>");
+                    setTimeout(() => window.location.href = "hub.html", 800);
+                }
+            },
+            {
+                name: '/cominfo',
+                desc: 'Display detailed computer information (CPU, RAM, GPU, OS, network, browser, etc).',
+                action: function() {
+                    printOutput(fakeSysInfo());
+                }
+            },
+            {
+                name: '/clear',
+                desc: 'Clear the terminal screen.',
+                action: function() {
+                    document.getElementById('terminal').innerHTML = '';
+                }
+            },
+            {
+                name: '/calc',
+                desc: 'Evaluate a math expression. Usage: /calc [expression]',
+                action: function(args) {
+                    let expr = args.join(' ');
+                    try {
+                        if (!/^[\d\s+\-*/().]+$/.test(expr)) throw "Unsafe expression!";
+                        let res = Function(`"use strict";return (${expr})`)();
+                        printOutput(`<div class='cmd-success'>${escapeHtml(expr)} = <b>${res}</b></div>`);
+                    } catch {
+                        printOutput("<div class='cmd-error'>Invalid or unsafe math expression.</div>");
+                    }
+                }
+            },
+            {
+                name: '/random',
+                desc: 'Get a random number, word, or emoji. Usage: /random [number|min max|word|emoji]',
+                action: function(args) {
+                    if (args[0] === 'word') {
+                        let words = ["alpha", "banana", "zebra", "quantum", "matrix", "neon", "byte", "sushi", "galaxy", "vortex"];
+                        printOutput(`<div class='cmd-success'>Random word: <b>${getRandomElement(words)}</b></div>`);
+                    } else if (args[0] === 'emoji') {
+                        let emojis = ["😀","🚀","🦄","🍕","🐱‍👤","🎲","🥨","🌈","💡","🍀","🧊"];
+                        printOutput(`<div class='cmd-success'>Random emoji: <b>${getRandomElement(emojis)}</b></div>`);
+                    } else if (args.length === 2) {
+                        let min = parseInt(args[0]), max = parseInt(args[1]);
+                        if (isNaN(min)||isNaN(max)||min>max) {
+                            printOutput("<div class='cmd-warning'>Usage: /random [min] [max]</div>");
+                        } else {
+                            let rnd = Math.floor(Math.random()*(max-min+1))+min;
+                            printOutput(`<div class='cmd-success'>Random number: <b>${rnd}</b></div>`);
+                        }
+                    } else {
+                        let rnd = Math.floor(Math.random()*100)+1;
+                        printOutput(`<div class='cmd-success'>Random number: <b>${rnd}</b> (1-100)</div>`);
+                    }
+                }
+            },
+            {
+                name: '/color',
+                desc: 'Change background color. Usage: /color [blue|green|black|pink|purple|random]',
+                action: function(args) {
+                    const colors = {
+                        blue: '#181844',
+                        green: '#182818',
+                        black: '#181818',
+                        pink: '#442830',
+                        purple: '#352844',
+                        random: '#' + Math.floor(Math.random()*16777215).toString(16)
+                    };
+                    let c = args[0];
+                    if (c && colors[c]) {
+                        document.body.style.background = colors[c];
+                        printOutput(`<div class='cmd-success'>Changed background to ${c}.</div>`);
+                    } else {
+                        printOutput("<div class='cmd-warning'>Available: blue, green, black, pink, purple, random.</div>");
+                    }
+                }
+            },
+            {
+                name: '/password',
+                desc: 'Generate a strong random password. Usage: /password [length]',
+                action: function(args) {
+                    let len = parseInt(args[0]) || 12;
+                    if (len < 6 || len > 64) {
+                        printOutput("<div class='cmd-warning'>Length must be 6-64.</div>");
+                        return;
+                    }
+                    let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=~";
+                    let pass = "";
+                    for (let i=0;i<len;i++) pass += chars[Math.floor(Math.random()*chars.length)];
+                    printOutput(`<div class='cmd-success'>Generated password: <b>${pass}</b></div>`);
+                }
+            },
+            {
+                name: '/uuid',
+                desc: 'Generate a UUID v4.',
+                action: function() {
+                    let uuid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                    );
+                    printOutput(`<div class='cmd-success'>UUIDv4: <b>${uuid}</b></div>`);
+                }
+            },
+            {
+                name: '/qr',
+                desc: 'Generate a QR code for a text or URL. Usage: /qr [text]',
+                action: function(args) {
+                    let txt = args.join(' ');
+                    if (!txt) {
+                        printOutput("<div class='cmd-warning'>Usage: /qr [text]</div>");
+                    } else {
+                        let url = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + encodeURIComponent(txt);
+                        printOutput(`<div class='cmd-info'>QR for "${escapeHtml(txt)}":<br><img src="${url}" alt="qr"></div>`);
+                    }
+                }
+            },
+            {
+                name: '/ascii',
+                desc: 'Show cool ASCII art! Usage: /ascii [cat|dog|fish|robot]',
+                action: function(args) {
+                    let ascii = {
+                        cat: `=^.^=`,
+                        dog: `U·ᴥ·U`,
+                        fish: `><(((º>`,
+                        robot: `[◉_◉]`
+                    };
+                    let key = args[0] || getRandomElement(["cat","dog","fish","robot"]);
+                    if (ascii[key]) {
+                        printOutput(`<div class='cmd-success'><pre>${ascii[key]}</pre></div>`);
+                    } else {
+                        printOutput("<div class='cmd-warning'>Options: cat, dog, fish, robot</div>");
+                    }
+                }
+            },
+            {
+                name: '/timer',
+                desc: 'Start a timer in seconds. Usage: /timer [seconds]',
+                action: function(args) {
+                    let sec = parseInt(args[0]);
+                    if (isNaN(sec) || sec < 1 || sec > 3600) {
+                        printOutput("<div class='cmd-warning'>Usage: /timer [1-3600]</div>");
+                        return;
+                    }
+                    printOutput(`<div class='cmd-info'>Timer started for <b>${sec}</b>s...</div>`);
+                    setTimeout(()=>printOutput(`<div class='cmd-success'>⏰ Timer done! (${sec}s)</div>`), sec*1000);
+                }
+            },
+            {
+                name: '/palindrome',
+                desc: 'Check if a word or phrase is a palindrome. Usage: /palindrome [text]',
+                action: function(args) {
+                    let txt = args.join('').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+                    if (!txt) {
+                        printOutput("<div class='cmd-warning'>Usage: /palindrome [text]</div>");
+                        return;
+                    }
+                    let isPal = txt === txt.split('').reverse().join('');
+                    printOutput(`<div class='cmd-${isPal?'success':'error'}'>${isPal?"It's a palindrome!":"Not a palindrome."}</div>`);
+                }
+            },
+            {
+                name: '/weather',
+                desc: 'Show a random weather report (simulation).',
+                action: function() {
+                    let weather = getRandomElement([
+                        "☀️ Clear, 25°C", "🌦️ Scattered showers, 18°C", "🌩️ Thunderstorm, 20°C",
+                        "❄️ Snowing, -2°C", "⛅ Partly cloudy, 22°C", "🌫️ Foggy, 10°C"
+                    ]);
+                    printOutput(`<div class='cmd-info'>Weather: <b>${weather}</b></div>`);
+                }
+            },
+            {
+                name: '/roll',
+                desc: 'Roll a dice (1-20). Usage: /roll [sides]',
+                action: function(args) {
+                    let sides = parseInt(args[0]) || 20;
+                    if (sides<2||sides>100) sides=20;
+                    let n = Math.floor(Math.random()*sides)+1;
+                    printOutput(`<div class='cmd-success'>🎲 You rolled a <b>${n}</b> (1-${sides})</div>`);
+                }
+            },
+            {
+                name: '/coin',
+                desc: 'Flip a coin.',
+                action: function() {
+                    let res = Math.random() < 0.5 ? 'Heads' : 'Tails';
+                    printOutput(`<div class='cmd-success'>🪙 <b>${res}</b></div>`);
+                }
+            },
+            {
+                name: '/fortune',
+                desc: 'Get a random fortune cookie message.',
+                action: function() {
+                    let fortunes = [
+                        "You will find what you seek.",
+                        "A thrilling time is in your immediate future.",
+                        "Now is the time to try something new.",
+                        "Hard work pays off in the future.",
+                        "A pleasant surprise is waiting for you.",
+                        "Don’t just think, act!",
+                        "A new perspective will come with the new year.",
+                        "The fortune you seek is in another cookie."
+                    ];
+                    printOutput(`<div class='cmd-info'>🥠 <b>${getRandomElement(fortunes)}</b></div>`);
+                }
+            },
+            {
+                name: '/joke',
+                desc: 'Get a quick random joke.',
+                action: function() {
+                    let jokes = [
+                        "Why do programmers prefer dark mode? Because light attracts bugs!",
+                        "Why did the computer go to the doctor? It had a virus.",
+                        "Why do Java developers wear glasses? Because they don’t see sharp.",
+                        "What do you get when you cross a cat and a dark horse? Kitty Perry.",
+                        "Why did the developer go broke? Because he used up all his cache."
+                    ];
+                    printOutput(`<div class='cmd-info'>😂 <b>${getRandomElement(jokes)}</b></div>`);
+                }
+            },
+            {
+                name: '/greet',
+                desc: 'Greet someone or yourself. Usage: /greet [name]',
+                action: function(args) {
+                    let name = args.join(' ') || 'stranger';
+                    printOutput(`<div class='cmd-success'>Hello, <b>${escapeHtml(name)}</b>!</div>`);
+                }
+            },
+            {
+                name: '/len',
+                desc: 'Show length of text. Usage: /len [text]',
+                action: function(args) {
+                    let txt = args.join(' ');
+                    printOutput(`<div class='cmd-info'>Length: <b>${txt.length}</b></div>`);
+                }
+            },
+            {
+                name: '/repeat',
+                desc: 'Repeat text n times. Usage: /repeat [text] [n]',
+                action: function(args) {
+                    let n = parseInt(args[args.length-1]);
+                    let txt = args.slice(0, -1).join(' ');
+                    if (isNaN(n) || n < 1 || !txt) {
+                        printOutput("<div class='cmd-warning'>Usage: /repeat [text] [n]</div>");
+                    } else {
+                        printOutput(`<div class='cmd-output'>${escapeHtml(txt.repeat(n))}</div>`);
+                    }
+                }
+            },
+            {
+                name: '/time',
+                desc: 'Show the current time.',
+                action: function() {
+                    let d = new Date();
+                    printOutput(`<div class='cmd-info'>${d.toLocaleTimeString()}</div>`);
+                }
+            },
+            {
+                name: '/date',
+                desc: 'Show the current date.',
+                action: function() {
+                    let d = new Date();
+                    printOutput(`<div class='cmd-info'>${d.toLocaleDateString()}</div>`);
+                }
+            },
+            {
+                name: '/url',
+                desc: 'Show current page URL.',
+                action: function() {
+                    printOutput(`<div class='cmd-info'>${window.location.href}</div>`);
+                }
+            },
+            {
+                name: '/reload',
+                desc: 'Reload the page.',
+                action: function() {
+                    printOutput("<div class='cmd-info'>Reloading...</div>");
+                    setTimeout(() => location.reload(), 700);
+                }
+            },
+            {
+                name: '/browser',
+                desc: 'Show browser info and features.',
+                action: function() {
+                    printOutput(`<div class='cmd-info'><b>Browser UA:</b> ${navigator.userAgent}<br>
+                        <b>Platform:</b> ${navigator.platform}<br>
+                        <b>Language:</b> ${navigator.language}<br>
+                        <b>Online:</b> ${navigator.onLine ? "Yes" : "No"}
+                    </div>`);
+                }
+            },
+            {
+                name: '/tab',
+                desc: 'Open a URL in a new tab. Usage: /tab [url]',
+                action: function(args) {
+                    let url = args.join(' ');
+                    if (!url.match(/^https?:\/\//)) url = "https://" + url;
+                    window.open(url, '_blank');
+                    printOutput(`<div class='cmd-info'>Opened <b>${escapeHtml(url)}</b> in a new tab.</div>`);
+                }
+            },
+            {
+                name: '/echo',
+                desc: 'Echo your input. Usage: /echo [message]',
+                action: function(args) {
+                    let msg = args.join(' ');
+                    if (!msg) {
+                        printOutput("<div class='cmd-warning'>Usage: /echo [message]</div>");
+                    } else {
+                        printOutput(`<div class='cmd-output'>${escapeHtml(msg)}</div>`);
+                    }
+                }
+            },
+            {
+                name: '/asciiart',
+                desc: 'Display random ASCII art.',
+                action: function() {
+                    let art = [
+                        `   _______\n  /       \\\n |  O _ O  |\n |    ^    |\n |  \\___/  |\n  \\_______/`,
+                        ` (\\_/)\n ( •_•)\n / >🍪 Want a cookie?`,
+                        `  .-''''-.\n /        \\\n|          |\n\\        /\n  '-.__.-'`
+                    ];
+                    printOutput(`<div class='cmd-success'><pre>${getRandomElement(art)}</pre></div>`);
+                }
+            }
+        ];
+
+        // Command input/scroll logic
+        document.getElementById('cmdInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                let val = this.value.trim();
+                if (!val) return;
+                printOutput(`<span style="color:#42c9ff;">&gt; ${escapeHtml(val)}</span>`);
+                handleCommand(val);
+                this.value = '';
+            }
+        });
+
+        function handleCommand(input) {
+            let [cmd, ...args] = input.split(/\s+/);
+            let found = commands.find(c => c.name === cmd);
+            if (found) {
+                found.action(args);
+            } else {
+                printOutput(`<div class='cmd-error'>Unknown command: <b>${escapeHtml(cmd)}</b> (type /help)</div>`);
+            }
+        }
+        // On load, greet user
+        printOutput("<div class='cmd-info'>Welcome to the Command Line! Type <b>/help</b> for available commands.<br>Scroll for full history.</div>");
+    </script>
+</body>
+</html>
