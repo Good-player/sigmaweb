@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Python Emulator</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    body {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: "Fira Mono", "Consolas", "Monaco", monospace;
+      margin: 0;
+      padding: 0;
+    }
+    #container {
+      max-width: 800px;
+      margin: 32px auto;
+      background: #252526;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px #0009;
+      padding: 24px 24px 16px 24px;
+    }
+    .button {
+      background: #007acc;
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      transition: background 0.2s;
+    }
+    .button:hover {
+      background: #005f99;
+    }
+    .editor-group {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    #highlighted {
+      min-height: 220px;
+      width: 100%;
+      font-size: 1.1rem;
+      font-family: inherit;
+      white-space: pre-wrap;
+      background: #16191e;
+      border: 1px solid #444;
+      border-radius: 6px 6px 0 0;
+      padding: 12px;
+      pointer-events: none;
+      color: #d4d4d4;
+      z-index: 1;
+      margin: 0;
+    }
+    #editor {
+      width: 100%;
+      min-height: 220px;
+      background: transparent;
+      border: 1px solid #444;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      padding: 12px;
+      font-size: 1.1rem;
+      font-family: inherit;
+      color: #d4d4d4;
+      caret-color: #d4d4d4;
+      outline: none;
+      resize: vertical;
+      z-index: 2;
+      position: relative;
+      box-sizing: border-box;
+    }
+    #output {
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 6px;
+      min-height: 100px;
+      font-size: 1.02rem;
+      padding: 10px;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    #cmdline-wrapper {
+      display: flex;
+      align-items: center;
+      background: #161616;
+      border-radius: 4px;
+      border: 1px solid #333;
+      padding: 7px 12px 7px 0;
+      margin-top: 12px;
+      margin-bottom: 10px;
+    }
+    #cmdline-label {
+      color: #42c586;
+      padding: 0 8px;
+      font-family: inherit;
+    }
+    #cmdline {
+      background: #161616;
+      border: none;
+      color: #d4d4d4;
+      font-size: 1.02rem;
+      font-family: inherit;
+      flex: 1;
+      outline: none;
+      margin-left: 0;
+      padding: 0 4px;
+    }
+    @media (max-width: 600px) {
+      #container { padding: 6px 2vw 8px 2vw; }
+      #highlighted, #editor { min-height: 120px; font-size: 0.98rem; }
+      #output { font-size: 0.97rem; }
+    }
+    /* Syntax highlighting */
+    .token-keyword { color: #569cd6; }
+    .token-builtin { color: #dcdcaa; }
+    .token-string { color: #ce9178; }
+    .token-number { color: #b5cea8; }
+    .token-comment { color: #6a9955; }
+    .token-operator { color: #d4d4d4; }
+    .token-defname { color: #4ec9b0; }
+    .token-class { color: #b8d7a3; }
+    .token-decorator { color: #c586c0; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <button class="button" onclick="window.location='hub.html'">&larr; Back to Hub</button>
+    <h2 style="margin:14px 0 10px 0;">Python Emulator</h2>
+    <div class="editor-group">
+      <pre id="highlighted"></pre>
+      <textarea id="editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="Python code editor"># Write your Python code here!
+print("Hello, world!")</textarea>
+    </div>
+    <button class="button" id="runBtn">Run</button>
+    <div id="output"></div>
+    <div id="cmdline-wrapper">
+      <span id="cmdline-label">&gt;&gt;&gt;</span>
+      <input id="cmdline" placeholder="Type a Python command and press Enter..." autocomplete="off" />
+    </div>
+    <div id="cmd-output"></div>
+    <p style="font-size:0.93rem;color:#888;margin:6px 0 0 0;">
+      <b>Note:</b> The "Run" button executes the editor code. The command line executes on Enter.<br>
+      Powered by <a href="https://github.com/python/cpython.wasm" target="_blank" style="color:#42c586;">Pyodide</a> (Python in WebAssembly).
+    </p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+  <script>
+    // --- Syntax Highlighting ---
+    const keywords = [
+      "False","None","True","and","as","assert","async","await","break","class","continue","def","del","elif",
+      "else","except","finally","for","from","global","if","import","in","is","lambda","nonlocal","not","or",
+      "pass","raise","return","try","while","with","yield"
+    ];
+    const builtins = [
+      "abs","all","any","ascii","bin","bool","bytearray","bytes","callable","chr","classmethod","compile","complex",
+      "delattr","dict","dir","divmod","enumerate","eval","exec","filter","float","format","frozenset","getattr",
+      "globals","hasattr","hash","help","hex","id","input","int","isinstance","issubclass","iter","len","list",
+      "locals","map","max","min","next","object","oct","open","ord","pow","print","property","range","repr",
+      "reversed","round","set","setattr","slice","sorted","staticmethod","str","sum","super","tuple","type","vars","zip"
+    ];
+    function escapeHTML(str) {
+      return str.replace(/[&<>]/g, tag => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;'
+      }[tag]));
+    }
+    function highlightPython(code) {
+      // comments
+      code = code.replace(/#.*/g, m => `<span class="token-comment">${escapeHTML(m)}</span>`);
+      // strings (single and double quoted, also triple)
+      code = code.replace(/("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g,
+        m => `<span class="token-string">${escapeHTML(m)}</span>`);
+      // decorators
+      code = code.replace(/^(\s*)@(\w+)/gm, (_, ws, name) =>
+        `${ws}<span class="token-decorator">@${name}</span>`);
+      // keywords
+      code = code.replace(
+        new RegExp("\\b(" + keywords.join("|") + ")\\b", "g"),
+        m => `<span class="token-keyword">${m}</span>`
+      );
+      // builtins
+      code = code.replace(
+        new RegExp("\\b(" + builtins.join("|") + ")\\b", "g"),
+        m => `<span class="token-builtin">${m}</span>`
+      );
+      // numbers
+      code = code.replace(/\b([0-9]+(\.[0-9]*)?|\.[0-9]+)\b/g,
+        m => `<span class="token-number">${m}</span>`);
+      // function/class def name
+      code = code.replace(/\bdef\s+([A-Za-z_][A-Za-z0-9_]*)/g,
+        (m, fn) => `def <span class="token-defname">${fn}</span>`);
+      code = code.replace(/\bclass\s+([A-Za-z_][A-Za-z0-9_]*)(\s*[:\(])/g,
+        (m, cn, trail) => `class <span class="token-class">${cn}</span>${trail}`);
+      return code;
+    }
+    function syncHighlight() {
+      const editor = document.getElementById('editor');
+      const highlighted = document.getElementById('highlighted');
+      let code = editor.value;
+      highlighted.innerHTML = highlightPython(code) + '<br>';
+      highlighted.scrollTop = editor.scrollTop;
+    }
+    document.getElementById('editor').addEventListener('input', syncHighlight);
+    document.getElementById('editor').addEventListener('scroll', function() {
+      document.getElementById('highlighted').scrollTop = this.scrollTop;
+    });
+    window.addEventListener('DOMContentLoaded', syncHighlight);
+
+    // --- Pyodide Setup ---
+    let pyodideReady = false, pyodide;
+    let pyCmdScope;
+    async function main() {
+      pyodide = await loadPyodide();
+      pyCmdScope = pyodide.globals.get("dict")();
+      pyodideReady = true;
+      window.pyodide = pyodide;
+      document.getElementById('output').textContent = "Python ready!";
+    }
+    main();
+
+    // --- Run Button (Editor) ---
+    document.getElementById('runBtn').onclick = async function() {
+      const code = document.getElementById('editor').value;
+      const output = document.getElementById('output');
+      if (!pyodideReady) {
+        output.textContent = "Python is still loading...";
+        return;
+      }
+      output.textContent = '';
+      try {
+        let out = '', err = '';
+        pyodide.setStdout({
+          batched: (s) => (out += s)
+        });
+        pyodide.setStderr({
+          batched: (s) => (err += s)
+        });
+        await pyodide.runPythonAsync(code, { globals: pyCmdScope });
+        output.innerHTML = `<span style="color:#42c586;">${out}</span>` + (err ? `<span style="color:#f55;">${err}</span>` : "");
+      } catch (e) {
+        output.innerHTML = `<span style="color:#f55;">${e}</span>`;
+      }
+    };
+
+    // --- Command Line (REPL) ---
+    const cmdline = document.getElementById('cmdline');
+    const cmdOutput = document.getElementById('cmd-output');
+    let replHistory = [], replIndex = -1;
+
+    cmdline.addEventListener('keydown', async function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await handleCmd();
+      } else if (e.key === 'ArrowUp') {
+        if (replHistory.length && replIndex > 0) {
+          replIndex--;
+          cmdline.value = replHistory[replIndex];
+        }
+        e.preventDefault();
+      } else if (e.key === 'ArrowDown') {
+        if (replHistory.length && replIndex < replHistory.length - 1) {
+          replIndex++;
+          cmdline.value = replHistory[replIndex];
+        } else if (replIndex === replHistory.length - 1) {
+          cmdline.value = "";
+          replIndex = replHistory.length;
+        }
+        e.preventDefault();
+      }
+    });
+
+    async function handleCmd() {
+      if (!pyodideReady) {
+        cmdOutput.innerHTML += `<div style="color:#f55;">Python loading...</div>`;
+        return;
+      }
+      const code = cmdline.value;
+      if (!code.trim()) return;
+      replHistory.push(code);
+      replIndex = replHistory.length;
+      cmdOutput.innerHTML += `<div><span style="color:#42c586;">&gt;&gt;&gt; ${escapeHTML(code)}</span></div>`;
+      cmdline.value = '';
+      let out = '', err = '';
+      pyodide.setStdout({ batched: (s) => (out += s) });
+      pyodide.setStderr({ batched: (s) => (err += s) });
+      try {
+        // Try eval first for expressions, else exec for statements
+        let result;
+        try {
+          result = await pyodide.runPythonAsync("__result__=" + code, { globals: pyCmdScope });
+          let val = pyCmdScope.get("__result__");
+          if (typeof val === "function") val = "<function>";
+          if (val !== undefined) out += val + "\n";
+        } catch {
+          await pyodide.runPythonAsync(code, { globals: pyCmdScope });
+        }
+        cmdOutput.innerHTML += (out ? `<div>${escapeHTML(out)}</div>` : '') +
+          (err ? `<div style="color:#f55;">${escapeHTML(err)}</div>` : "");
+      } catch (e) {
+        cmdOutput.innerHTML += `<div style="color:#f55;">${escapeHTML(e.toString())}</div>`;
+      }
+      cmdOutput.scrollTop = cmdOutput.scrollHeight;
+    }
+
+    // Mobile 'Enter' support hack
+    cmdline.addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') handleCmd();
+    });
+
+    // Focus command line on click of output (for ease)
+    document.getElementById('cmd-output').addEventListener('click', () => cmdline.focus());
+  </script>
+</body>
+</html>
