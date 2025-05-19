@@ -8,3 +8,4 @@ Y/M/D
 3/17 Added devhub. Trying pong
 3/31 Nah im out with pong. Flappy block now avail.
 4/1 Improved ui
+5/18 Added Command line, Python and improved ui.
