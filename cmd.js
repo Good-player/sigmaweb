@@ -428,4 +428,4 @@ function handleCommand(inputStr) {
     else printOutput(`<div class='cmd-error'>Unknown command: <b>${escapeHtml(cmd)}</b> (type /help)</div>`);
 }
 
-printOutput("<div class='cmd-info'>Welcome to the Command Line! Type <b>/help</b> for available commands.<br>Scroll for history. Arrow keys = scroll like editor. Type for autocomplete, <b>TAB</b> to select command.</div>");
+printOutput("<div class='cmd-info'>Welcome to the Command Line! Type <b>/help</b> for available commands.<br>Scroll for history. Sigmaweb 2026, All right reserved.</div>");
