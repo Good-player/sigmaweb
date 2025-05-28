@@ -1,4 +1,4 @@
 [
-  { "path": "abobebas.pdf", "name": "Abobebas", "creator": "William", "desc": "N/A" },
-  { "path": "alrb.pdf", "name": "A little russian boy", "creator": "Azizbek", "desc": "N/A" }
+  { "path": "abobebas.pdf", "name": "Abobebas", "creator": "William", "desc": "N/A", "genre": "Funny", "rec": false },
+  { "path": "alrb.pdf", "name": "A little russian boy", "creator": "Azizbek", "desc": "N/A", "genre": "N/A", "rec": true }
 ]
