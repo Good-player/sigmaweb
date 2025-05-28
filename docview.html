@@ -1,1 +1,446 @@
  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document Book Reader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PDF.js CDN (worker is also loaded from CDN, no server-side code) -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      background: #f6f6f2;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #3d2c29;
+      color: #fff;
+      padding: 18px 0 8px 0;
+      text-align: center;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    #main-menu {
+      padding: 2rem 1rem 1rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .bookshelf {
+      display: grid;
+      gap: 2rem 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      margin-top: 1.5rem;
+      align-items: flex-start;
+    }
+    .book-card {
+      background: #fffbed;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px #cabfae33;
+      padding: 1.2rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: box-shadow 0.2s;
+      cursor: pointer;
+      border: 1px solid #eee7d8;
+      min-height: 350px;
+    }
+    .book-card:hover {
+      box-shadow: 0 6px 24px #cabfae66;
+      background: #fffdf3;
+    }
+    .thumb-wrapper {
+      background: #e6dacb;
+      border-radius: 6px;
+      width: 170px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px #cabfae22;
+    }
+    .thumb-wrapper canvas {
+      background: #e6dacb;
+      display: block;
+      margin: 0 auto;
+      width: 160px !important;
+      height: 210px !important;
+    }
+    .book-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin: 0.3rem 0 0.1rem 0;
+      color: #463a2f;
+      text-align: center;
+      word-break: break-all;
+    }
+    .book-path {
+      font-size: 0.84rem;
+      color: #8f7f6a;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      word-break: break-all;
+    }
+    .open-btn {
+      margin-top: auto;
+      padding: 0.5rem 1.2rem;
+      background: #7f4f24;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.14s;
+      font-family: inherit;
+    }
+    .open-btn:hover {
+      background: #614129;
+    }
+    #pdf-viewer {
+      display: none;
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: #f5ede6;
+      z-index: 20;
+      overflow-y: auto;
+      padding-bottom: 60px;
+    }
+    #pdf-toolbar {
+      position: sticky;
+      top: 0;
+      background: #3d2c29;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 10px 14px;
+      z-index: 21;
+    }
+    #pdf-toolbar button {
+      background: #fffbed;
+      color: #3d2c29;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1.1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      margin-right: 8px;
+      transition: background 0.14s;
+    }
+    #pdf-toolbar button:hover {
+      background: #e6dacb;
+    }
+    #pdf-canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.2rem 0 2rem 0;
+      gap: 2.4rem;
+      min-height: 90vh;
+    }
+    .pdf-page-canvas {
+      box-shadow: 0 2px 12px #cabfae22;
+      border-radius: 7px;
+      margin-bottom: 1.2rem;
+      background: #fff;
+      max-width: 95vw;
+      width: auto;
+      height: auto;
+    }
+    #loading-indicator {
+      text-align: center;
+      color: #8f7f6a;
+      font-size: 1.1rem;
+      margin-top: 3rem;
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      .thumb-wrapper {
+        width: 110px;
+        height: 140px;
+      }
+      .thumb-wrapper canvas {
+        width: 98px !important;
+        height: 130px !important;
+      }
+      .book-card {
+        min-height: 230px;
+        padding: 1rem 0.4rem;
+      }
+      #pdf-canvas-container {
+        padding: 1.2rem 0 1rem 0;
+      }
+    }
+    .back-hub-btn, .back-main-btn {
+      background: #a98467;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1.1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-right: 10px;
+      font-family: inherit;
+      transition: background 0.14s;
+    }
+    .back-hub-btn:hover, .back-main-btn:hover {
+      background: #8b6f4e;
+    }
+    .menu-btn-row {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+      margin-bottom: 1.1rem;
+    }
+    .no-pdfs-msg {
+      text-align: center;
+      font-size: 1.15rem;
+      color: #8f7f6a;
+      margin-top: 2.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span id="header-title">Book Collection</span>
+  </header>
+  <div id="main-menu">
+    <div class="menu-btn-row">
+      <button class="back-hub-btn" onclick="location.href='hub.html'">Back to hub</button>
+    </div>
+    <div id="bookshelf" class="bookshelf"></div>
+    <div id="no-pdfs" class="no-pdfs-msg" style="display:none;">No PDF books found.<br>Place PDF files in the <b>/Document</b> folder (and subfolders).</div>
+  </div>
+  <div id="pdf-viewer">
+    <div id="pdf-toolbar">
+      <button class="back-main-btn" onclick="returnToMenu()">Back to Main Menu</button>
+      <button class="back-hub-btn" onclick="location.href='hub.html'">Back to hub</button>
+      <span id="viewer-title" style="font-weight:500; font-size:1.05rem;"></span>
+    </div>
+    <div id="pdf-canvas-container"></div>
+    <div id="loading-indicator"></div>
+  </div>
+  <script>
+    // PDF.js setup
+    window['pdfjs-dist/build/pdf'].GlobalWorkerOptions.workerSrc =
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js';
+
+    // ========== Utility ==========
+
+    // Recursively fetch all PDFs in /Document and subfolders using GitHub Pages directory listing
+    // This works only if the server returns directory listings (which GitHub Pages does not, for security).
+    // So we need to hardcode a "PDF indexer" approach for static hosting:
+    // We'll try to fetch /Document/index.json first; if not found, fallback to a default scan.
+    // For best results, users should generate /Document/index.json (a JSON array of PDF relative paths).
+    // If not present, this code will try to guess PDFs in /Document or one subfolder deep.
+
+    async function fetchPDFList() {
+      // Try to get /Document/index.json (JSON array of { path, name } objects)
+      try {
+        let resp = await fetch('Document/index.json');
+        if (resp.ok) {
+          let arr = await resp.json();
+          // arr: [{path: "folder/file.pdf", name: "file.pdf"}, ...]
+          return arr.map(item => ({
+            path: 'Document/' + item.path.replace(/^\.?\/?Document\//, ''),
+            name: item.name || item.path.split('/').pop()
+          }));
+        }
+      } catch (e) {
+        // Fallback below
+      }
+
+      // Fallback: try to list PDFs in /Document and one subfolder deep (best effort for static hosting)
+      let pdfs = [];
+      async function probeDir(dir) {
+        // Try dir/index.json
+        try {
+          let resp = await fetch(dir + '/index.json');
+          if (resp.ok) {
+            let arr = await resp.json();
+            for (let p of arr) {
+              if (typeof p === 'string' && p.toLowerCase().endsWith('.pdf')) {
+                pdfs.push({ path: dir + '/' + p, name: p });
+              }
+            }
+            return;
+          }
+        } catch (e) {}
+        // Otherwise, try brute-force guessing
+        // Try to fetch 20 possible files
+        for (let i = 1; i <= 20; ++i) {
+          let fname = `book${i}.pdf`;
+          try {
+            let r = await fetch(`${dir}/${fname}`, { method: 'HEAD' });
+            if (r.ok) pdfs.push({ path: `${dir}/${fname}`, name: fname });
+          } catch (e) {}
+        }
+      }
+      // Try /Document/
+      await probeDir('Document');
+      // Try /Document/{subfolder}/
+      for (let s = 1; s <= 10; ++s) {
+        let subdir = `Document/Folder${s}`;
+        await probeDir(subdir);
+      }
+      return pdfs;
+    }
+
+    // ========== Main Menu: Book List ==========
+
+    const bookshelf = document.getElementById('bookshelf');
+    const noPDFsMsg = document.getElementById('no-pdfs');
+    let pdfList = [];
+
+    async function renderBookList() {
+      bookshelf.innerHTML = '';
+      noPDFsMsg.style.display = 'none';
+      pdfList = await fetchPDFList();
+
+      if (!pdfList.length) {
+        noPDFsMsg.style.display = '';
+        return;
+      }
+
+      for (const pdf of pdfList) {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+
+        const thumbDiv = document.createElement('div');
+        thumbDiv.className = 'thumb-wrapper';
+        const thumbCanvas = document.createElement('canvas');
+        thumbDiv.appendChild(thumbCanvas);
+
+        // Title and path
+        const title = document.createElement('div');
+        title.className = 'book-title';
+        title.textContent = pdf.name.replace(/\.pdf$/i, '');
+
+        const path = document.createElement('div');
+        path.className = 'book-path';
+        path.textContent = pdf.path.replace(/^Document\//, '');
+
+        // Open Button
+        const openBtn = document.createElement('button');
+        openBtn.className = 'open-btn';
+        openBtn.textContent = 'Open Book';
+
+        card.appendChild(thumbDiv);
+        card.appendChild(title);
+        card.appendChild(path);
+        card.appendChild(openBtn);
+
+        // Render thumbnail (first page)
+        renderPDFThumbnail(pdf.path, thumbCanvas);
+
+        // Click handlers
+        card.addEventListener('click', e => {
+          // Prevent event when clicking button, we'll handle both
+          e.stopPropagation();
+          openPDFViewer(pdf);
+        });
+        openBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          openPDFViewer(pdf);
+        });
+
+        bookshelf.appendChild(card);
+      }
+    }
+
+    // ========== Thumbnail Renderer ==========
+
+    async function renderPDFThumbnail(pdfPath, canvas) {
+      try {
+        const loadingTask = window['pdfjs-dist/build/pdf'].getDocument(pdfPath);
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        // Render to canvas at thumbnail size
+        const viewport = page.getViewport({ scale: 0.25 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+      } catch (e) {
+        // Show placeholder (blank) if failed
+        canvas.width = 160; canvas.height = 210;
+        let ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#e6dacb';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#bfae98';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No Preview', canvas.width/2, canvas.height/2);
+      }
+    }
+
+    // ========== PDF Viewer ==========
+
+    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfCanvasContainer = document.getElementById('pdf-canvas-container');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const viewerTitle = document.getElementById('viewer-title');
+    let currentPDF = null;
+
+    async function openPDFViewer(pdf) {
+      document.getElementById('main-menu').style.display = 'none';
+      pdfViewer.style.display = 'block';
+      viewerTitle.textContent = pdf.name.replace(/\.pdf$/i, '');
+      loadingIndicator.textContent = 'Loading book...';
+      pdfCanvasContainer.innerHTML = '';
+      currentPDF = pdf;
+
+      try {
+        const loadingTask = window['pdfjs-dist/build/pdf'].getDocument(pdf.path);
+        const pdfDoc = await loadingTask.promise;
+        loadingIndicator.textContent = '';
+        // Render each page
+        for (let i = 1; i <= pdfDoc.numPages; ++i) {
+          const page = await pdfDoc.getPage(i);
+          const scale = Math.min(1.2, Math.max(0.7, window.innerWidth < 600 ? 0.7 : 1.1));
+          const viewport = page.getViewport({ scale: scale });
+          const canvas = document.createElement('canvas');
+          canvas.className = 'pdf-page-canvas';
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          pdfCanvasContainer.appendChild(canvas);
+        }
+      } catch (e) {
+        loadingIndicator.textContent = 'Failed to load PDF.';
+      }
+    }
+
+    function returnToMenu() {
+      pdfViewer.style.display = 'none';
+      document.getElementById('main-menu').style.display = '';
+      pdfCanvasContainer.innerHTML = '';
+      loadingIndicator.textContent = '';
+      viewerTitle.textContent = '';
+      currentPDF = null;
+    }
+
+    // ========== Responsive: Redraw on resize ==========
+
+    window.addEventListener('resize', () => {
+      // If PDF is open, re-render all pages at new width
+      if (pdfViewer.style.display === 'block' && currentPDF) {
+        openPDFViewer(currentPDF);
+      }
+    });
+
+    // ========== Init ==========
+
+    renderBookList();
+  </script>
+</body>
+</html>
