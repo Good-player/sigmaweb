@@ -1,4 +1,4 @@
 [
-  { "path": "abobebas.pdf", "name": "Abobebas -William" },
-  { "path": "alrb.pdf", "name": "A little russian boy -Aziz" }
+  { "path": "abobebas.pdf", "name": "Abobebas", "creator": "William", "desc": "N/A" },
+  { "path": "alrb.pdf", "name": "A little russian boy", "creator": "Azizbek", "desc": "N/A" }
 ]
