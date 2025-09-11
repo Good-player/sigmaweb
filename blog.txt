@@ -9,3 +9,4 @@ Y/M/D
 3/31 Nah im out with pong. Flappy block now avail.
 4/1 Improved ui
 5/18 Added Command line, Python and improved ui.
+9/11 Make ai shit. my mom buy me api yayayyay. alpha test open only for some coolguy.
