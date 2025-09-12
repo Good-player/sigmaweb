@@ -28,7 +28,7 @@
             min-width: 240px;
             margin-left: 12px;
         }
-        .code-card-main { padding: 18px 14px 12px 16px; font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; }
+        .code-card-main { padding: 18px 14px 12px 16px; font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; white-space: pre; }
         .code-card-buttons {
             position: absolute;
             top: 8px;
@@ -72,6 +72,14 @@
             .chat-container { max-width: 98vw; }
             .code-card { max-width: 99vw; min-width: 0; margin-left: 0; }
         }
+        /* For markdown */
+        h1, h2, h3, h4, h5, h6 { margin: 0.7em 0 0.3em 0; }
+        ul { margin: 0.3em 0 0.3em 1em; }
+        li { margin-bottom: 0.2em; }
+        a { color: #007bff; text-decoration: underline; }
+        b { font-weight: bold; }
+        i { font-style: italic; }
+        code { background: #eee; color: #d6336c; border-radius: 4px; padding: 2px 6px; font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; font-size: 0.99em; }
     </style>
 </head>
 <body>
@@ -148,7 +156,6 @@
 
         // Markdown parser (simple, handles bold, italics, lists, links, inline code, headings)
         function renderMarkdown(text) {
-            // Escape html
             text = escapeHtml(text);
 
             // Headings
@@ -160,7 +167,7 @@
                        .replace(/^# (.*)$/gm, '<h1>$1</h1>');
 
             // Lists
-            text = text.replace(/^\s*[-*] (.*)$/gm, '<li>$1</li>');
+            text = text.replace(/^[ \t]*[-*] (.*)$/gm, '<li>$1</li>');
             text = text.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
 
             // Bold and italics
@@ -282,22 +289,23 @@
             let lastUpdate = 0;
             let streamFinished = false;
 
-            // Backend streaming endpoint (simulate with polling for demo)
-            // Replace with your actual streaming API if available!
-            // Here, we fetch Claude's response and type it out character by character.
-            try {
-                // Prepare messages for Claude API
-                const messages = [];
-                historySnapshot.forEach(msg => {
-                    if (msg.role === 'user' || msg.role === 'ai') {
-                        messages.push({
-                            role: msg.role === 'user' ? 'user' : 'assistant',
-                            content: msg.content
-                        });
-                    }
-                });
-                messages.push({ role: 'user', content: userMsg });
+            // Prepare messages for Claude API, filter out empty content messages
+            const messages = [];
+            historySnapshot.forEach(msg => {
+                if (
+                    (msg.role === 'user' || msg.role === 'ai') &&
+                    msg.content && msg.content.trim() !== ""
+                ) {
+                    messages.push({
+                        role: msg.role === 'user' ? 'user' : 'assistant',
+                        content: msg.content
+                    });
+                }
+            });
+            // Push the latest user message
+            messages.push({ role: 'user', content: userMsg });
 
+            try {
                 // Get API key
                 const keyResp = await fetch('/sigmaweb/api/claudeapi.txt');
                 const apiKey = (await keyResp.text()).trim();
