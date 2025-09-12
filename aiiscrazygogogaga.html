@@ -85,7 +85,7 @@
                 messages.push({ role: 'user', content: userMsg });
 
                 // Fetch API key from /api/claudeapi.txt
-                const keyResp = await fetch('sigmaweb/api/claudeapi.txt');
+                const keyResp = await fetch('sigma/api/claudeapi.txt');
                 const apiKey = (await keyResp.text()).trim();
 
                 // Claude API endpoint and model
