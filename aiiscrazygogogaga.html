@@ -77,11 +77,18 @@
         // Claude API call using backend endpoint and haiku-3.5 model
         async function getClaudeReply(userMsg, history) {
             try {
-                // Prepare messages for Claude API
-                const messages = history.map(msg => ({
-                    role: msg.role === 'user' ? 'user' : 'assistant',
-                    content: msg.content
-                }));
+                // Prepare messages for Claude API (must be array of {role, content})
+                const messages = [];
+                // Only push user/assistant roles, skip others
+                history.forEach(msg => {
+                    if (msg.role === 'user' || msg.role === 'ai') {
+                        messages.push({
+                            role: msg.role === 'user' ? 'user' : 'assistant',
+                            content: msg.content
+                        });
+                    }
+                });
+                // Always end with the latest user message
                 messages.push({ role: 'user', content: userMsg });
 
                 // Fetch API key from /api/claudeapi.txt
@@ -108,8 +115,19 @@
                     })
                 });
 
-                if (!resp.ok) throw new Error('Claude API error');
+                // Improved error handling
+                if (!resp.ok) {
+                    let errorMsg = 'Claude API error.';
+                    try {
+                        const errorData = await resp.json();
+                        if (errorData.error && errorData.error.message) {
+                            errorMsg += ' ' + errorData.error.message;
+                        }
+                    } catch {}
+                    return errorMsg;
+                }
                 const data = await resp.json();
+                // Claude API returns content as array of objects with 'text'
                 return data.content?.[0]?.text || 'No reply from Claude.';
             } catch (err) {
                 return 'Error contacting Claude API.';
