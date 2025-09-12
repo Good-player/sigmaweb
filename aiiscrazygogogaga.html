@@ -68,9 +68,18 @@
         .mode-switch { margin-left: auto; }
         .mode-btn { background: #e9ecef; color: #007bff; border: none; border-radius: 5px; font-size: 14px; padding: 6px 13px; cursor: pointer; margin-left: 5px; }
         .mode-btn.active { background: #007bff; color: #fff; }
+        .personality-settings { margin-bottom: 12px; padding: 10px; background: #f0f4ff; border-radius: 7px; }
+        .personality-settings label { font-size: 14px; margin-right: 8px; }
+        .personality-settings input[type="range"] { vertical-align: middle; }
+        .personality-settings input[type="text"] { width: 180px; font-size: 14px; padding: 6px; border-radius: 5px; border: 1px solid #ccc; margin-left: 4px; }
+        .tab-row { display: flex; gap: 2px; margin-bottom: 5px; }
+        .tab-btn { background: #e9ecef; color: #007bff; border: none; border-radius: 5px 5px 0 0; font-size: 14px; padding: 6px 13px; cursor: pointer;}
+        .tab-btn.active { background: #fff; color: #007bff; border-bottom: 2px solid #007bff; }
+        .tab-content { background: #fff; border-radius: 0 0 6px 6px; border: 1px solid #eee; border-top: none; padding: 10px; }
         @media (max-width: 700px) {
             .chat-container { max-width: 98vw; }
             .code-card { max-width: 99vw; min-width: 0; margin-left: 0; }
+            .personality-settings input[type="text"] { width: 98vw;}
         }
         /* For markdown */
         h1, h2, h3, h4, h5, h6 { margin: 0.7em 0 0.3em 0; }
@@ -85,6 +94,13 @@
 <body>
     <div class="chat-container">
         <div class="logo"><span>SigmaWeb AI Chat (Claude)</span></div>
+        <div class="personality-settings">
+            <label for="tempRange">Humor/Creativity (temperature):</label>
+            <input type="range" id="tempRange" min="0" max="1" step="0.01" value="0.5"/>
+            <span id="tempValue">0.5</span>
+            <label for="personalityPrompt">Personality:</label>
+            <input type="text" id="personalityPrompt" placeholder="E.g. Be a nerdy man" />
+        </div>
         <div class="history-btn-row">
             <button id="deleteHistoryBtn" title="Delete chat history" style="background:#f44336; color:white;">Delete history</button>
             <div class="mode-switch">
@@ -105,23 +121,34 @@
         const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
         const chatModeBtn = document.getElementById('chatModeBtn');
         const searchModeBtn = document.getElementById('searchModeBtn');
+        const tempRange = document.getElementById('tempRange');
+        const tempValue = document.getElementById('tempValue');
+        const personalityPrompt = document.getElementById('personalityPrompt');
 
         let mode = 'chat'; // 'chat' or 'search'
+        let searchTabs = ['Answer', 'References'];
+        let searchTabActive = 'Answer'; // default active tab
+        let lastSearchReferences = []; // store refs for last search
+
+        tempRange.oninput = () => { tempValue.textContent = tempRange.value; };
 
         chatModeBtn.onclick = () => {
             mode = 'chat';
             chatModeBtn.classList.add('active');
             searchModeBtn.classList.remove('active');
             userInput.placeholder = "Type your message...";
+            searchTabActive = 'Answer';
+            renderHistory();
         };
         searchModeBtn.onclick = () => {
             mode = 'search';
             chatModeBtn.classList.remove('active');
             searchModeBtn.classList.add('active');
             userInput.placeholder = "Type your search query...";
+            searchTabActive = 'Answer';
+            renderHistory();
         };
 
-        // Load chat history from localStorage
         let history = JSON.parse(localStorage.getItem('sigmaweb_claude_chat') || '[]');
         renderHistory();
 
@@ -132,11 +159,7 @@
             addMessage('user', text);
             userInput.value = '';
             chatForm.querySelector('button').disabled = true;
-
-            // Use Claude API via backend endpoint
-            // live talking: stream the response
             await aiReplyStream(text, history);
-
             chatForm.querySelector('button').disabled = false;
         });
 
@@ -144,65 +167,46 @@
             if (confirm("Delete all chat history?")) {
                 localStorage.removeItem('sigmaweb_claude_chat');
                 history = [];
+                lastSearchReferences = [];
                 renderHistory();
             }
         };
 
-        function addMessage(role, content) {
-            history.push({ role, content });
+        function addMessage(role, content, meta={}) {
+            history.push({ role, content, meta });
             localStorage.setItem('sigmaweb_claude_chat', JSON.stringify(history));
             renderHistory();
         }
 
-        // Markdown parser (simple, handles bold, italics, lists, links, inline code, headings)
         function renderMarkdown(text) {
             text = escapeHtml(text);
-
-            // Headings
             text = text.replace(/^###### (.*)$/gm, '<h6>$1</h6>')
                        .replace(/^##### (.*)$/gm, '<h5>$1</h5>')
                        .replace(/^#### (.*)$/gm, '<h4>$1</h4>')
                        .replace(/^### (.*)$/gm, '<h3>$1</h3>')
                        .replace(/^## (.*)$/gm, '<h2>$1</h2>')
                        .replace(/^# (.*)$/gm, '<h1>$1</h1>');
-
-            // Lists
             text = text.replace(/^[ \t]*[-*] (.*)$/gm, '<li>$1</li>');
             text = text.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
-
-            // Bold and italics
             text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
                        .replace(/\*(.*?)\*/g, '<i>$1</i>');
-
-            // Inline code
             text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-            // Links
             text = text.replace(/\[([^\]]+)\]\(([^ )]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-
             return text;
         }
 
-        // Detect code blocks and render markdown
         function renderMsgContent(content) {
-            // Regex for code block: ```language\n...\n```
             const codeBlockRegex = /```([a-zA-Z0-9]*)\s*([\s\S]*?)```/g;
             let lastIndex = 0;
             let htmlParts = [];
             let match;
-
             let isDesktop = window.innerWidth > 700;
-
             while ((match = codeBlockRegex.exec(content)) !== null) {
-                // Add markdown before code block
                 if (match.index > lastIndex) {
                     htmlParts.push(renderMarkdown(content.substring(lastIndex, match.index)));
                 }
-                // Add code block
                 const lang = match[1] || 'code';
                 const code = match[2];
-
-                // Claude-style code card (desktop only)
                 htmlParts.push(
                     isDesktop
                     ? `<div class="code-card">
@@ -213,12 +217,10 @@
                             <button class="code-btn run-btn" data-code="${encodeURIComponent(code)}" data-lang="${lang}">Run</button>
                         </div>
                     </div>`
-                    // On mobile, just show regular code block
                     : `<div class="code-label">${escapeHtml(lang.toUpperCase())} CODE</div><pre class="code-block">${escapeHtml(code)}</pre>`
                 );
                 lastIndex = codeBlockRegex.lastIndex;
             }
-            // Add markdown after last code block
             if (lastIndex < content.length) {
                 htmlParts.push(renderMarkdown(content.substring(lastIndex)));
             }
@@ -236,25 +238,70 @@
 
         function renderHistory() {
             chatHistory.innerHTML = '';
-            history.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = 'msg ' + msg.role;
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
+            if (mode === 'search' && lastSearchReferences.length > 0) {
+                // Tab row for search
+                let tabRow = document.createElement('div');
+                tabRow.className = 'tab-row';
+                searchTabs.forEach(tab => {
+                    let btn = document.createElement('button');
+                    btn.className = 'tab-btn' + (searchTabActive === tab ? ' active' : '');
+                    btn.textContent = tab;
+                    btn.onclick = () => {
+                        searchTabActive = tab;
+                        renderHistory();
+                    };
+                    tabRow.appendChild(btn);
+                });
+                chatHistory.appendChild(tabRow);
 
-                if (msg.role === 'ai') {
-                    bubble.innerHTML = renderMsgContent(msg.content);
-                } else {
-                    bubble.textContent = msg.content;
+                let tabContent = document.createElement('div');
+                tabContent.className = 'tab-content';
+                if (searchTabActive === 'Answer') {
+                    // Render normal history
+                    history.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = 'msg ' + msg.role;
+                        const bubble = document.createElement('div');
+                        bubble.className = 'bubble';
+                        if (msg.role === 'ai') {
+                            bubble.innerHTML = renderMsgContent(msg.content);
+                        } else {
+                            bubble.textContent = msg.content;
+                        }
+                        div.appendChild(bubble);
+                        tabContent.appendChild(div);
+                    });
+                } else if (searchTabActive === 'References') {
+                    if (lastSearchReferences.length > 0) {
+                        tabContent.innerHTML = lastSearchReferences.map(ref => 
+                            `<div><a href="${escapeHtml(ref.url)}" target="_blank">${escapeHtml(ref.title || ref.url)}</a>
+                            ${ref.snippet ? `<br><small>${escapeHtml(ref.snippet)}</small>` : ''}</div>`
+                        ).join('<hr>');
+                    } else {
+                        tabContent.innerHTML = "<em>No references found.</em>";
+                    }
                 }
-                div.appendChild(bubble);
-                chatHistory.appendChild(div);
-            });
+                chatHistory.appendChild(tabContent);
+            } else {
+                // Chat mode or search mode with no references
+                history.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = 'msg ' + msg.role;
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    if (msg.role === 'ai') {
+                        bubble.innerHTML = renderMsgContent(msg.content);
+                    } else {
+                        bubble.textContent = msg.content;
+                    }
+                    div.appendChild(bubble);
+                    chatHistory.appendChild(div);
+                });
+            }
             chatHistory.scrollTop = chatHistory.scrollHeight;
             attachCodeBtns();
         }
 
-        // Attach Copy/Run event listeners (re-run after render)
         function attachCodeBtns() {
             document.querySelectorAll('.copy-btn').forEach(btn => {
                 btn.onclick = function() {
@@ -269,7 +316,6 @@
                     const code = decodeURIComponent(this.getAttribute('data-code'));
                     const lang = (this.getAttribute('data-lang') || '').toLowerCase();
                     if (lang === 'html') {
-                        // Open in new window if HTML
                         const win = window.open();
                         win.document.write(code);
                     } else if (lang === 'js' || lang === 'javascript') {
@@ -281,16 +327,18 @@
             });
         }
 
-        // Live talking/typing
+        // Live talking/typing + references
         async function aiReplyStream(userMsg, historySnapshot) {
-            addMessage('ai', ''); // Add empty AI message for typing
+            addMessage('ai', '');
             let idx = history.length - 1;
             let fullText = '';
-            let lastUpdate = 0;
-            let streamFinished = false;
-
-            // Prepare messages for Claude API, filter out empty content messages
+            lastSearchReferences = [];
+            // Prepare messages: filter out empty content messages
             const messages = [];
+            const personaPrompt = personalityPrompt.value.trim();
+            if (personaPrompt) {
+                messages.push({ role: 'system', content: personaPrompt });
+            }
             historySnapshot.forEach(msg => {
                 if (
                     (msg.role === 'user' || msg.role === 'ai') &&
@@ -302,17 +350,14 @@
                     });
                 }
             });
-            // Push the latest user message
             messages.push({ role: 'user', content: userMsg });
 
             try {
-                // Get API key
                 const keyResp = await fetch('/sigmaweb/api/claudeapi.txt');
                 const apiKey = (await keyResp.text()).trim();
-
-                // Claude API endpoint and model
                 const endpoint = 'https://api.anthropic.com/v1/messages';
                 const model = mode === 'search' ? 'claude-opus-4-20250514' : 'claude-opus-4-20250514';
+                const temperature = parseFloat(tempRange.value);
 
                 const resp = await fetch(endpoint, {
                     method: 'POST',
@@ -325,6 +370,7 @@
                     body: JSON.stringify({
                         model,
                         max_tokens: 512,
+                        temperature,
                         messages
                     })
                 });
@@ -338,22 +384,38 @@
                         }
                     } catch {}
                     updateAiMsg(idx, errorMsg);
-                    streamFinished = true;
                 } else {
                     const data = await resp.json();
                     const aiText = data.content?.[0]?.text || 'No reply from Claude.';
+                    // Streaming animation
                     for (let i = 0; i < aiText.length; i++) {
                         fullText = aiText.slice(0, i + 1);
                         updateAiMsg(idx, fullText);
-                        await new Promise(res => setTimeout(res, 7)); // typing speed
+                        await new Promise(res => setTimeout(res, 7));
                     }
-                    // Final update
                     updateAiMsg(idx, aiText);
-                    streamFinished = true;
+
+                    // If in search mode, try to extract references from Claude API response
+                    if (mode === 'search') {
+                        // Example: sources are in data.content[0].references or .sources or .citations array
+                        let refs = [];
+                        if (data.content?.[0]?.references) {
+                            refs = data.content[0].references;
+                        } else if (data.content?.[0]?.sources) {
+                            refs = data.content[0].sources;
+                        } else if (data.content?.[0]?.citations) {
+                            refs = data.content[0].citations;
+                        }
+                        // Fallback: look for URLs in the text
+                        if (refs.length === 0 && aiText.match(/https?:\/\/[^\s]+/g)) {
+                            refs = aiText.match(/https?:\/\/[^\s]+/g).map(url => ({ url }));
+                        }
+                        lastSearchReferences = (Array.isArray(refs) ? refs : []);
+                        renderHistory(); // so tab shows
+                    }
                 }
             } catch (err) {
                 updateAiMsg(idx, 'Error contacting Claude API.');
-                streamFinished = true;
             }
         }
 
