@@ -59,7 +59,7 @@
         }
         .code-btn:active { background: #005bb5; }
         .input-row { display: flex; gap: 8px; }
-        input[type="text"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+        input[type="text"], input[type="number"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
         button { padding: 10px 18px; border-radius: 6px; border: none; background: #007bff; color: #fff; font-size: 16px; cursor: pointer; }
         button:disabled { background: #aaa; cursor: not-allowed; }
         .logo { text-align: center; margin-bottom: 18px; }
@@ -68,20 +68,17 @@
         .mode-switch { margin-left: auto; }
         .mode-btn { background: #e9ecef; color: #007bff; border: none; border-radius: 5px; font-size: 14px; padding: 6px 13px; cursor: pointer; margin-left: 5px; }
         .mode-btn.active { background: #007bff; color: #fff; }
-        .personality-settings { margin-bottom: 12px; padding: 10px; background: #f0f4ff; border-radius: 7px; }
-        .personality-settings label { font-size: 14px; margin-right: 8px; }
-        .personality-settings input[type="range"] { vertical-align: middle; }
-        .personality-settings input[type="text"] { width: 180px; font-size: 14px; padding: 6px; border-radius: 5px; border: 1px solid #ccc; margin-left: 4px; }
         .tab-row { display: flex; gap: 2px; margin-bottom: 5px; }
         .tab-btn { background: #e9ecef; color: #007bff; border: none; border-radius: 5px 5px 0 0; font-size: 14px; padding: 6px 13px; cursor: pointer;}
         .tab-btn.active { background: #fff; color: #007bff; border-bottom: 2px solid #007bff; }
         .tab-content { background: #fff; border-radius: 0 0 6px 6px; border: 1px solid #eee; border-top: none; padding: 10px; }
+        .anthropic-settings { margin-bottom: 12px; padding: 10px; background: #f0f4ff; border-radius: 7px; }
+        .anthropic-settings label { font-size: 14px; margin-right: 8px; }
+        .anthropic-settings input, .anthropic-settings select { font-size: 15px; margin-right: 8px; border-radius: 5px; border: 1px solid #ccc; padding: 4px 8px; }
         @media (max-width: 700px) {
             .chat-container { max-width: 98vw; }
             .code-card { max-width: 99vw; min-width: 0; margin-left: 0; }
-            .personality-settings input[type="text"] { width: 98vw;}
         }
-        /* For markdown */
         h1, h2, h3, h4, h5, h6 { margin: 0.7em 0 0.3em 0; }
         ul { margin: 0.3em 0 0.3em 1em; }
         li { margin-bottom: 0.2em; }
@@ -94,13 +91,30 @@
 <body>
     <div class="chat-container">
         <div class="logo"><span>SigmaWeb AI Chat (Claude)</span></div>
-        <div class="personality-settings">
-            <label for="tempRange">Humor/Creativity (temperature):</label>
-            <input type="range" id="tempRange" min="0" max="1" step="0.01" value="0.5"/>
-            <span id="tempValue">0.5</span>
-            <label for="personalityPrompt">Personality:</label>
-            <input type="text" id="personalityPrompt" placeholder="E.g. Be a nerdy man" />
-        </div>
+        <form id="anthropicSettingsForm" class="anthropic-settings" autocomplete="off">
+            <label for="systemPrompt">System prompt:</label>
+            <input type="text" id="systemPrompt" placeholder="Optional system prompt" />
+            <label for="modelSelect">Model:</label>
+            <select id="modelSelect">
+                <option value="claude-3-opus-20240229" selected>claude-3-opus-20240229</option>
+                <option value="claude-3-sonnet-20240229">claude-3-sonnet-20240229</option>
+                <option value="claude-3-haiku-20240307">claude-3-haiku-20240307</option>
+                <option value="claude-2.1">claude-2.1</option>
+                <option value="claude-2.0">claude-2.0</option>
+            </select>
+            <label for="maxTokens">max_tokens:</label>
+            <input type="number" id="maxTokens" min="1" max="4096" value="512" style="width:70px"/>
+            <label for="temperature">temperature:</label>
+            <input type="number" id="temperature" min="0" max="1" step="0.01" value="0.5" style="width:60px"/>
+            <label for="topP">top_p:</label>
+            <input type="number" id="topP" min="0" max="1" step="0.01" value="1.0" style="width:60px"/>
+            <label for="topK">top_k:</label>
+            <input type="number" id="topK" min="1" max="100" step="1" value="1" style="width:60px"/>
+            <label for="stopSequences">stop_sequences:</label>
+            <input type="text" id="stopSequences" placeholder="Comma separated" style="width:120px"/>
+            <label for="metadata">metadata:</label>
+            <input type="text" id="metadata" placeholder="key:value, ..." style="width:120px"/>
+        </form>
         <div class="history-btn-row">
             <button id="deleteHistoryBtn" title="Delete chat history" style="background:#f44336; color:white;">Delete history</button>
             <div class="mode-switch">
@@ -121,16 +135,21 @@
         const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
         const chatModeBtn = document.getElementById('chatModeBtn');
         const searchModeBtn = document.getElementById('searchModeBtn');
-        const tempRange = document.getElementById('tempRange');
-        const tempValue = document.getElementById('tempValue');
-        const personalityPrompt = document.getElementById('personalityPrompt');
+        // Anthropic settings
+        const anthropicSettingsForm = document.getElementById('anthropicSettingsForm');
+        const systemPromptInput = document.getElementById('systemPrompt');
+        const modelSelect = document.getElementById('modelSelect');
+        const maxTokensInput = document.getElementById('maxTokens');
+        const temperatureInput = document.getElementById('temperature');
+        const topPInput = document.getElementById('topP');
+        const topKInput = document.getElementById('topK');
+        const stopSequencesInput = document.getElementById('stopSequences');
+        const metadataInput = document.getElementById('metadata');
 
         let mode = 'chat'; // 'chat' or 'search'
         let searchTabs = ['Answer', 'References'];
-        let searchTabActive = 'Answer'; // default active tab
-        let lastSearchReferences = []; // store refs for last search
-
-        tempRange.oninput = () => { tempValue.textContent = tempRange.value; };
+        let searchTabActive = 'Answer';
+        let lastSearchReferences = [];
 
         chatModeBtn.onclick = () => {
             mode = 'chat';
@@ -239,7 +258,6 @@
         function renderHistory() {
             chatHistory.innerHTML = '';
             if (mode === 'search' && lastSearchReferences.length > 0) {
-                // Tab row for search
                 let tabRow = document.createElement('div');
                 tabRow.className = 'tab-row';
                 searchTabs.forEach(tab => {
@@ -257,7 +275,6 @@
                 let tabContent = document.createElement('div');
                 tabContent.className = 'tab-content';
                 if (searchTabActive === 'Answer') {
-                    // Render normal history
                     history.forEach(msg => {
                         const div = document.createElement('div');
                         div.className = 'msg ' + msg.role;
@@ -283,7 +300,6 @@
                 }
                 chatHistory.appendChild(tabContent);
             } else {
-                // Chat mode or search mode with no references
                 history.forEach(msg => {
                     const div = document.createElement('div');
                     div.className = 'msg ' + msg.role;
@@ -327,18 +343,28 @@
             });
         }
 
-        // Live talking/typing + references
+        // Build metadata object from string "key:value, key2:value2"
+        function parseMetadata(str) {
+            const meta = {};
+            (str || "").split(',').forEach(pair => {
+                const [key, value] = pair.split(':').map(s => s && s.trim());
+                if (key && value) meta[key] = value;
+            });
+            return meta;
+        }
+
         async function aiReplyStream(userMsg, historySnapshot) {
             addMessage('ai', '');
             let idx = history.length - 1;
             let fullText = '';
             lastSearchReferences = [];
-            // Prepare messages: filter out empty content messages
             const messages = [];
-            const personaPrompt = personalityPrompt.value.trim();
-            if (personaPrompt) {
-                messages.push({ role: 'system', content: personaPrompt });
+            // Add system prompt if set (Anthropic: system message, see docs)
+            const systemPrompt = systemPromptInput.value.trim();
+            if (systemPrompt) {
+                messages.push({ role: 'system', content: systemPrompt });
             }
+            // Add previous chat history
             historySnapshot.forEach(msg => {
                 if (
                     (msg.role === 'user' || msg.role === 'ai') &&
@@ -356,8 +382,31 @@
                 const keyResp = await fetch('/sigmaweb/api/claudeapi.txt');
                 const apiKey = (await keyResp.text()).trim();
                 const endpoint = 'https://api.anthropic.com/v1/messages';
-                const model = mode === 'search' ? 'claude-opus-4-20250514' : 'claude-opus-4-20250514';
-                const temperature = parseFloat(tempRange.value);
+                const model = modelSelect.value;
+                const max_tokens = parseInt(maxTokensInput.value) || 512;
+                const temperature = parseFloat(temperatureInput.value) || undefined;
+                const top_p = parseFloat(topPInput.value) || undefined;
+                const top_k = parseInt(topKInput.value) || undefined;
+                // Stop sequences as array
+                const stop_sequences = stopSequencesInput.value.trim()
+                    ? stopSequencesInput.value.split(',').map(s => s.trim()).filter(s => s)
+                    : undefined;
+                // Metadata as object
+                const metadata = metadataInput.value.trim()
+                    ? parseMetadata(metadataInput.value)
+                    : undefined;
+
+                // Build request body with all optional fields
+                const body = {
+                    model,
+                    max_tokens,
+                    messages
+                };
+                if (temperature !== undefined) body.temperature = temperature;
+                if (top_p !== undefined) body.top_p = top_p;
+                if (top_k !== undefined) body.top_k = top_k;
+                if (stop_sequences && stop_sequences.length > 0) body.stop_sequences = stop_sequences;
+                if (metadata && Object.keys(metadata).length > 0) body.metadata = metadata;
 
                 const resp = await fetch(endpoint, {
                     method: 'POST',
@@ -367,12 +416,7 @@
                         'content-type': 'application/json',
                         'anthropic-dangerous-direct-browser-access': 'true'
                     },
-                    body: JSON.stringify({
-                        model,
-                        max_tokens: 512,
-                        temperature,
-                        messages
-                    })
+                    body: JSON.stringify(body)
                 });
 
                 if (!resp.ok) {
@@ -387,7 +431,6 @@
                 } else {
                     const data = await resp.json();
                     const aiText = data.content?.[0]?.text || 'No reply from Claude.';
-                    // Streaming animation
                     for (let i = 0; i < aiText.length; i++) {
                         fullText = aiText.slice(0, i + 1);
                         updateAiMsg(idx, fullText);
@@ -395,24 +438,22 @@
                     }
                     updateAiMsg(idx, aiText);
 
-                    // If in search mode, try to extract references from Claude API response
-                    if (mode === 'search') {
-                        // Example: sources are in data.content[0].references or .sources or .citations array
-                        let refs = [];
-                        if (data.content?.[0]?.references) {
-                            refs = data.content[0].references;
-                        } else if (data.content?.[0]?.sources) {
-                            refs = data.content[0].sources;
-                        } else if (data.content?.[0]?.citations) {
-                            refs = data.content[0].citations;
-                        }
-                        // Fallback: look for URLs in the text
-                        if (refs.length === 0 && aiText.match(/https?:\/\/[^\s]+/g)) {
-                            refs = aiText.match(/https?:\/\/[^\s]+/g).map(url => ({ url }));
-                        }
-                        lastSearchReferences = (Array.isArray(refs) ? refs : []);
-                        renderHistory(); // so tab shows
+                    // References tab
+                    let refs = [];
+                    // Anthropic API docs: citations, sources, references possible
+                    if (data.content?.[0]?.citations) {
+                        refs = data.content[0].citations;
+                    } else if (data.content?.[0]?.sources) {
+                        refs = data.content[0].sources;
+                    } else if (data.content?.[0]?.references) {
+                        refs = data.content[0].references;
                     }
+                    // Fallback: look for URLs in the text
+                    if ((!refs || refs.length === 0) && aiText.match(/https?:\/\/[^\s]+/g)) {
+                        refs = aiText.match(/https?:\/\/[^\s]+/g).map(url => ({ url }));
+                    }
+                    lastSearchReferences = (Array.isArray(refs) ? refs : []);
+                    if (mode === 'search') renderHistory();
                 }
             } catch (err) {
                 updateAiMsg(idx, 'Error contacting Claude API.');
