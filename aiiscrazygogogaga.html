@@ -8,43 +8,82 @@
         body { font-family: Arial, sans-serif; background: #f5f6fa; margin: 0; }
         .chat-container { max-width: 500px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 24px; }
         .chat-history { height: 350px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; padding: 12px; margin-bottom: 16px; background: #fafbfc; }
-        .msg { margin-bottom: 14px; }
-        .msg.user { text-align: right; }
+        .msg { margin-bottom: 14px; display: flex; }
+        .msg.user { justify-content: flex-end; }
+        .msg.ai { justify-content: flex-start; }
+        .msg .bubble { display: inline-block; padding: 10px 16px; border-radius: 18px; max-width: 80%; background: #e9ecef; color: #222; white-space: pre-wrap; word-break: break-word; }
         .msg.user .bubble { background: #007bff; color: #fff; }
-        .msg.ai .bubble { background: #e9ecef; color: #222; }
-        .bubble { display: inline-block; padding: 10px 16px; border-radius: 18px; max-width: 80%; white-space: pre-wrap; word-break: break-word; }
-        .input-row { display: flex; gap: 8px; }
-        input[type="text"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-        button { padding: 10px 18px; border-radius: 6px; border: none; background: #007bff; color: #fff; font-size: 16px; cursor: pointer; }
-        button:disabled { background: #aaa; cursor: not-allowed; }
-        .logo { text-align: center; margin-bottom: 18px; }
-        .logo span { font-weight: bold; font-size: 1.3em; color: #007bff; }
-        /* Code styling */
-        pre.code-block {
+        .code-card {
             background: #222;
             color: #eee;
-            padding: 12px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin: 8px 0;
             font-size: 15px;
-            line-height: 1.5;
             overflow-x: auto;
             border: 1px solid #333;
+            box-shadow: 0 2px 8px #bbb;
+            padding: 0;
+            position: relative;
+            max-width: 340px;
+            min-width: 240px;
+            margin-left: 12px;
+        }
+        .code-card-main { padding: 18px 14px 12px 16px; font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; }
+        .code-card-buttons {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            display: flex;
+            gap: 6px;
         }
         .code-label {
-            display: inline-block;
+            display: block;
             font-size: 13px;
             color: #007bff;
             background: #e9ecef;
             border-radius: 5px;
             padding: 2px 8px;
             margin-bottom: 3px;
+            margin-left: 16px;
+            margin-top: 10px;
+            width: fit-content;
+        }
+        .code-btn {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            padding: 2px 8px;
+            cursor: pointer;
+        }
+        .code-btn:active { background: #005bb5; }
+        .input-row { display: flex; gap: 8px; }
+        input[type="text"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+        button { padding: 10px 18px; border-radius: 6px; border: none; background: #007bff; color: #fff; font-size: 16px; cursor: pointer; }
+        button:disabled { background: #aaa; cursor: not-allowed; }
+        .logo { text-align: center; margin-bottom: 18px; }
+        .logo span { font-weight: bold; font-size: 1.3em; color: #007bff; }
+        .history-btn-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .mode-switch { margin-left: auto; }
+        .mode-btn { background: #e9ecef; color: #007bff; border: none; border-radius: 5px; font-size: 14px; padding: 6px 13px; cursor: pointer; margin-left: 5px; }
+        .mode-btn.active { background: #007bff; color: #fff; }
+        @media (max-width: 700px) {
+            .chat-container { max-width: 98vw; }
+            .code-card { max-width: 99vw; min-width: 0; margin-left: 0; }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="logo"><span>SigmaWeb AI Chat (Claude)</span></div>
+        <div class="history-btn-row">
+            <button id="deleteHistoryBtn" title="Delete chat history" style="background:#f44336; color:white;">Delete history</button>
+            <div class="mode-switch">
+                <button class="mode-btn active" id="chatModeBtn">Chat</button>
+                <button class="mode-btn" id="searchModeBtn">Search</button>
+            </div>
+        </div>
         <div id="chatHistory" class="chat-history"></div>
         <form id="chatForm" class="input-row" autocomplete="off">
             <input type="text" id="userInput" placeholder="Type your message..." required autofocus />
@@ -55,6 +94,24 @@
         const chatHistory = document.getElementById('chatHistory');
         const chatForm = document.getElementById('chatForm');
         const userInput = document.getElementById('userInput');
+        const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
+        const chatModeBtn = document.getElementById('chatModeBtn');
+        const searchModeBtn = document.getElementById('searchModeBtn');
+
+        let mode = 'chat'; // 'chat' or 'search'
+
+        chatModeBtn.onclick = () => {
+            mode = 'chat';
+            chatModeBtn.classList.add('active');
+            searchModeBtn.classList.remove('active');
+            userInput.placeholder = "Type your message...";
+        };
+        searchModeBtn.onclick = () => {
+            mode = 'search';
+            chatModeBtn.classList.remove('active');
+            searchModeBtn.classList.add('active');
+            userInput.placeholder = "Type your search query...";
+        };
 
         // Load chat history from localStorage
         let history = JSON.parse(localStorage.getItem('sigmaweb_claude_chat') || '[]');
@@ -69,11 +126,19 @@
             chatForm.querySelector('button').disabled = true;
 
             // Use Claude API via backend endpoint
-            const aiReply = await getClaudeReply(text, history);
+            // live talking: stream the response
+            await aiReplyStream(text, history);
 
-            addMessage('ai', aiReply);
             chatForm.querySelector('button').disabled = false;
         });
+
+        deleteHistoryBtn.onclick = function() {
+            if (confirm("Delete all chat history?")) {
+                localStorage.removeItem('sigmaweb_claude_chat');
+                history = [];
+                renderHistory();
+            }
+        };
 
         function addMessage(role, content) {
             history.push({ role, content });
@@ -81,7 +146,37 @@
             renderHistory();
         }
 
-        // --- THIS IS THE KEY FUNCTION ---
+        // Markdown parser (simple, handles bold, italics, lists, links, inline code, headings)
+        function renderMarkdown(text) {
+            // Escape html
+            text = escapeHtml(text);
+
+            // Headings
+            text = text.replace(/^###### (.*)$/gm, '<h6>$1</h6>')
+                       .replace(/^##### (.*)$/gm, '<h5>$1</h5>')
+                       .replace(/^#### (.*)$/gm, '<h4>$1</h4>')
+                       .replace(/^### (.*)$/gm, '<h3>$1</h3>')
+                       .replace(/^## (.*)$/gm, '<h2>$1</h2>')
+                       .replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+            // Lists
+            text = text.replace(/^\s*[-*] (.*)$/gm, '<li>$1</li>');
+            text = text.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
+
+            // Bold and italics
+            text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                       .replace(/\*(.*?)\*/g, '<i>$1</i>');
+
+            // Inline code
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Links
+            text = text.replace(/\[([^\]]+)\]\(([^ )]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            return text;
+        }
+
+        // Detect code blocks and render markdown
         function renderMsgContent(content) {
             // Regex for code block: ```language\n...\n```
             const codeBlockRegex = /```([a-zA-Z0-9]*)\s*([\s\S]*?)```/g;
@@ -89,24 +184,37 @@
             let htmlParts = [];
             let match;
 
+            let isDesktop = window.innerWidth > 700;
+
             while ((match = codeBlockRegex.exec(content)) !== null) {
-                // Add text before code block
+                // Add markdown before code block
                 if (match.index > lastIndex) {
-                    htmlParts.push(escapeHtml(content.substring(lastIndex, match.index)));
+                    htmlParts.push(renderMarkdown(content.substring(lastIndex, match.index)));
                 }
                 // Add code block
                 const lang = match[1] || 'code';
                 const code = match[2];
+
+                // Claude-style code card (desktop only)
                 htmlParts.push(
-                    `<div class="code-label">${escapeHtml(lang.toUpperCase())} CODE</div><pre class="code-block">${escapeHtml(code)}</pre>`
+                    isDesktop
+                    ? `<div class="code-card">
+                        <span class="code-label">${escapeHtml(lang.toUpperCase())} CODE</span>
+                        <div class="code-card-main">${escapeHtml(code)}</div>
+                        <div class="code-card-buttons">
+                            <button class="code-btn copy-btn" data-code="${encodeURIComponent(code)}">Copy</button>
+                            <button class="code-btn run-btn" data-code="${encodeURIComponent(code)}" data-lang="${lang}">Run</button>
+                        </div>
+                    </div>`
+                    // On mobile, just show regular code block
+                    : `<div class="code-label">${escapeHtml(lang.toUpperCase())} CODE</div><pre class="code-block">${escapeHtml(code)}</pre>`
                 );
                 lastIndex = codeBlockRegex.lastIndex;
             }
-            // Add remaining text after last code block
+            // Add markdown after last code block
             if (lastIndex < content.length) {
-                htmlParts.push(escapeHtml(content.substring(lastIndex)));
+                htmlParts.push(renderMarkdown(content.substring(lastIndex)));
             }
-
             return htmlParts.join('');
         }
 
@@ -136,15 +244,51 @@
                 chatHistory.appendChild(div);
             });
             chatHistory.scrollTop = chatHistory.scrollHeight;
+            attachCodeBtns();
         }
 
-        // Claude API call using backend endpoint and haiku-3.5 model
-        async function getClaudeReply(userMsg, history) {
+        // Attach Copy/Run event listeners (re-run after render)
+        function attachCodeBtns() {
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const code = decodeURIComponent(this.getAttribute('data-code'));
+                    navigator.clipboard.writeText(code);
+                    btn.textContent = "Copied!";
+                    setTimeout(() => btn.textContent = "Copy", 1200);
+                };
+            });
+            document.querySelectorAll('.run-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const code = decodeURIComponent(this.getAttribute('data-code'));
+                    const lang = (this.getAttribute('data-lang') || '').toLowerCase();
+                    if (lang === 'html') {
+                        // Open in new window if HTML
+                        const win = window.open();
+                        win.document.write(code);
+                    } else if (lang === 'js' || lang === 'javascript') {
+                        try { eval(code); } catch(e) { alert("Error: " + e.message); }
+                    } else {
+                        alert("Run only supported for HTML and JS.");
+                    }
+                };
+            });
+        }
+
+        // Live talking/typing
+        async function aiReplyStream(userMsg, historySnapshot) {
+            addMessage('ai', ''); // Add empty AI message for typing
+            let idx = history.length - 1;
+            let fullText = '';
+            let lastUpdate = 0;
+            let streamFinished = false;
+
+            // Backend streaming endpoint (simulate with polling for demo)
+            // Replace with your actual streaming API if available!
+            // Here, we fetch Claude's response and type it out character by character.
             try {
-                // Prepare messages for Claude API (must be array of {role, content})
+                // Prepare messages for Claude API
                 const messages = [];
-                // Only push user/assistant roles, skip others
-                history.forEach(msg => {
+                historySnapshot.forEach(msg => {
                     if (msg.role === 'user' || msg.role === 'ai') {
                         messages.push({
                             role: msg.role === 'user' ? 'user' : 'assistant',
@@ -152,18 +296,16 @@
                         });
                     }
                 });
-                // Always end with the latest user message
                 messages.push({ role: 'user', content: userMsg });
 
-                // Fetch API key from /api/claudeapi.txt
+                // Get API key
                 const keyResp = await fetch('/sigmaweb/api/claudeapi.txt');
                 const apiKey = (await keyResp.text()).trim();
 
                 // Claude API endpoint and model
                 const endpoint = 'https://api.anthropic.com/v1/messages';
-                const model = 'claude-opus-4-20250514';
+                const model = mode === 'search' ? 'claude-opus-4-20250514' : 'claude-opus-4-20250514';
 
-                // Send request to Claude API
                 const resp = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
@@ -179,7 +321,6 @@
                     })
                 });
 
-                // Improved error handling
                 if (!resp.ok) {
                     let errorMsg = 'Claude API error.';
                     try {
@@ -188,14 +329,30 @@
                             errorMsg += ' ' + errorData.error.message;
                         }
                     } catch {}
-                    return errorMsg;
+                    updateAiMsg(idx, errorMsg);
+                    streamFinished = true;
+                } else {
+                    const data = await resp.json();
+                    const aiText = data.content?.[0]?.text || 'No reply from Claude.';
+                    for (let i = 0; i < aiText.length; i++) {
+                        fullText = aiText.slice(0, i + 1);
+                        updateAiMsg(idx, fullText);
+                        await new Promise(res => setTimeout(res, 7)); // typing speed
+                    }
+                    // Final update
+                    updateAiMsg(idx, aiText);
+                    streamFinished = true;
                 }
-                const data = await resp.json();
-                // Claude API returns content as array of objects with 'text'
-                return data.content?.[0]?.text || 'No reply from Claude.';
             } catch (err) {
-                return 'Error contacting Claude API.';
+                updateAiMsg(idx, 'Error contacting Claude API.');
+                streamFinished = true;
             }
+        }
+
+        function updateAiMsg(idx, text) {
+            history[idx].content = text;
+            localStorage.setItem('sigmaweb_claude_chat', JSON.stringify(history));
+            renderHistory();
         }
     </script>
 </body>
