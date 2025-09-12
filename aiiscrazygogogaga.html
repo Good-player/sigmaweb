@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>SigmaWeb AI Chat (Claude)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google Fonts and Fira Mono for code -->
+    <!-- Fira Mono for code -->
     <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,500&display=swap" rel="stylesheet">
     <style>
         body {
@@ -240,7 +240,19 @@
             0%, 100% { border-right: 2px solid #007bff; }
             50% { border-right: 2px solid transparent; }
         }
-        /* Scrollbar styling */
+        .ref-card {
+            background: #f8fafc;
+            border-radius: 7px;
+            box-shadow: 0 1px 4px #e3e8f0;
+            margin: 8px 0;
+            padding: 8px 12px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .ref-card img { margin-right: 6px; }
+        .ref-snippet { font-size: 13px; color: #444; margin-top: 3px; }
+        .references { margin-top: 12px; }
         ::-webkit-scrollbar { width: 9px; background: #f5f7ff;}
         ::-webkit-scrollbar-thumb { background: #b9c8d3; border-radius: 10px;}
         ::-webkit-scrollbar-thumb:hover { background: #007bff33;}
@@ -313,8 +325,8 @@
             }
         };
 
-        function addMessage(role, content) {
-            history.push({ role, content });
+        function addMessage(role, content, meta={}) {
+            history.push({ role, content, meta });
             localStorage.setItem('sigmaweb_claude_chat', JSON.stringify(history));
             renderHistory();
         }
@@ -337,12 +349,15 @@
             return text;
         }
 
-        function renderMsgContent(content, streaming=false) {
+        // Recognize urls, code blocks, markdown, citations
+        function renderMsgContent(content, citations = [], streaming=false) {
+            // Code block
             const codeBlockRegex = /```([a-zA-Z0-9]*)\s*([\s\S]*?)```/g;
             let lastIndex = 0;
             let htmlParts = [];
             let match;
             let isDesktop = window.innerWidth > 900;
+
             while ((match = codeBlockRegex.exec(content)) !== null) {
                 if (match.index > lastIndex) {
                     htmlParts.push(renderMarkdown(content.substring(lastIndex, match.index)));
@@ -350,8 +365,8 @@
                 const lang = match[1] || 'code';
                 const code = match[2];
                 htmlParts.push(
-                    isDesktop
-                    ? `<div class="code-card">
+                    isDesktop ?
+                    `<div class="code-card">
                         <span class="code-label">${escapeHtml(lang.toUpperCase())} CODE</span>
                         <div class="code-card-main">${escapeHtml(code)}</div>
                         <div class="code-card-buttons">
@@ -366,6 +381,35 @@
             if (lastIndex < content.length) {
                 htmlParts.push(renderMarkdown(content.substring(lastIndex)));
             }
+
+            // Recognize URLs and show rich cards
+            let urlRegex = /(https?:\/\/[^\s]+)/g;
+            htmlParts = htmlParts.map(part =>
+                part.replace(urlRegex, url => {
+                    if (url.includes('youtube.com')) {
+                        return `<div class="ref-card"><img src="https://www.youtube.com/s/desktop/0057e8c8/img/favicon.ico" style="height:20px;vertical-align:middle;margin-right:6px;"> <a href="${url}" target="_blank" style="color:#FF0000;font-weight:bold;">YouTube</a></div>`;
+                    }
+                    // Add more sites/logos as needed
+                    return `<div class="ref-card"><a href="${url}" target="_blank">${url}</a></div>`;
+                })
+            );
+
+            // Citations/references (search mode)
+            if (citations && citations.length > 0) {
+                htmlParts.push('<hr><div class="references"><b>References:</b>');
+                citations.forEach(ref => {
+                    htmlParts.push(
+                        `<div class="ref-card">
+                            <a href="${escapeHtml(ref.url)}" target="_blank">
+                                ${ref.title ? escapeHtml(ref.title) : escapeHtml(ref.url)}
+                            </a>
+                            ${ref.cited_text ? `<div class="ref-snippet">${escapeHtml(ref.cited_text)}</div>` : ""}
+                        </div>`
+                    );
+                });
+                htmlParts.push('</div>');
+            }
+
             let html = htmlParts.join('');
             if (streaming) html += `<span class="streaming"></span>`;
             return html;
@@ -380,7 +424,7 @@
                 .replace(/'/g, "&#039;");
         }
 
-        function renderHistory(streamingIdx = -1, partial = "") {
+        function renderHistory(streamingIdx = -1, partial = "", citations = []) {
             chatHistory.innerHTML = '';
             history.forEach((msg, idx) => {
                 const div = document.createElement('div');
@@ -389,9 +433,9 @@
                 bubble.className = 'bubble';
                 if (msg.role === 'ai') {
                     if (idx === streamingIdx) {
-                        bubble.innerHTML = renderMsgContent(partial, true);
+                        bubble.innerHTML = renderMsgContent(partial, citations, true);
                     } else {
-                        bubble.innerHTML = renderMsgContent(msg.content);
+                        bubble.innerHTML = renderMsgContent(msg.content, msg.meta && msg.meta.citations ? msg.meta.citations : []);
                     }
                 } else {
                     bubble.textContent = msg.content;
@@ -453,7 +497,6 @@
                 const apiKey = (await keyResp.text()).trim();
                 const endpoint = 'https://api.anthropic.com/v1/messages';
                 const model = mode === 'search' ? 'claude-opus-4-20250514' : 'claude-opus-4-20250514';
-                // Simulated streaming: fetch all, animate
                 const resp = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
@@ -464,8 +507,13 @@
                     },
                     body: JSON.stringify({
                         model,
-                        max_tokens: 512,
-                        messages
+                        max_tokens: 1024,
+                        messages,
+                        tools: mode === 'search' ? [{
+                            "type": "web_search_20250305",
+                            "name": "web_search",
+                            "max_uses": 5
+                        }] : undefined
                     })
                 });
 
@@ -477,24 +525,43 @@
                             errorMsg += ' ' + errorData.error.message;
                         }
                     } catch {}
-                    updateAiMsg(idx, errorMsg);
+                    updateAiMsg(idx, errorMsg, {});
                 } else {
                     const data = await resp.json();
+                    // Find citations
+                    let citations = [];
+                    if (mode === 'search') {
+                        // Try common keys
+                        if (data.content?.[0]?.citations) citations = data.content[0].citations;
+                        else if (data.content?.[0]?.references) citations = data.content[0].references;
+                        else if (data.content?.[0]?.sources) citations = data.content[0].sources;
+                        // Fallback: find URLs in text
+                        if ((!citations || citations.length === 0) && data.content?.[0]?.text) {
+                            citations = [];
+                            let urlRegex = /(https?:\/\/[^\s]+)/g;
+                            let foundUrls = data.content[0].text.match(urlRegex);
+                            if (foundUrls) {
+                                foundUrls.forEach(url => citations.push({ url }));
+                            }
+                        }
+                    }
                     const aiText = data.content?.[0]?.text || 'No reply from Claude.';
+                    // Live streaming effect
                     for (let i = 0; i < aiText.length; i+=2) {
                         fullText = aiText.slice(0, i + 1);
-                        renderHistory(idx, fullText);
+                        renderHistory(idx, fullText, citations);
                         await new Promise(res => setTimeout(res, 7));
                     }
-                    updateAiMsg(idx, aiText);
+                    updateAiMsg(idx, aiText, {citations});
                 }
             } catch (err) {
-                updateAiMsg(idx, 'Error contacting Claude API.');
+                updateAiMsg(idx, 'Error contacting Claude API.', {});
             }
         }
 
-        function updateAiMsg(idx, text) {
+        function updateAiMsg(idx, text, meta={}) {
             history[idx].content = text;
+            history[idx].meta = meta;
             localStorage.setItem('sigmaweb_claude_chat', JSON.stringify(history));
             renderHistory();
         }
