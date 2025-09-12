@@ -12,13 +12,34 @@
         .msg.user { text-align: right; }
         .msg.user .bubble { background: #007bff; color: #fff; }
         .msg.ai .bubble { background: #e9ecef; color: #222; }
-        .bubble { display: inline-block; padding: 10px 16px; border-radius: 18px; max-width: 80%; }
+        .bubble { display: inline-block; padding: 10px 16px; border-radius: 18px; max-width: 80%; white-space: pre-wrap; word-break: break-word; }
         .input-row { display: flex; gap: 8px; }
         input[type="text"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
         button { padding: 10px 18px; border-radius: 6px; border: none; background: #007bff; color: #fff; font-size: 16px; cursor: pointer; }
         button:disabled { background: #aaa; cursor: not-allowed; }
         .logo { text-align: center; margin-bottom: 18px; }
         .logo span { font-weight: bold; font-size: 1.3em; color: #007bff; }
+        /* Code styling */
+        pre.code-block {
+            background: #222;
+            color: #eee;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+        .code-label {
+            display: inline-block;
+            font-size: 13px;
+            color: #007bff;
+            background: #e9ecef;
+            border-radius: 5px;
+            padding: 2px 8px;
+            margin-bottom: 3px;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +81,44 @@
             renderHistory();
         }
 
+        // --- THIS IS THE KEY FUNCTION ---
+        function renderMsgContent(content) {
+            // Regex for code block: ```language\n...\n```
+            const codeBlockRegex = /```([a-zA-Z0-9]*)\s*([\s\S]*?)```/g;
+            let lastIndex = 0;
+            let htmlParts = [];
+            let match;
+
+            while ((match = codeBlockRegex.exec(content)) !== null) {
+                // Add text before code block
+                if (match.index > lastIndex) {
+                    htmlParts.push(escapeHtml(content.substring(lastIndex, match.index)));
+                }
+                // Add code block
+                const lang = match[1] || 'code';
+                const code = match[2];
+                htmlParts.push(
+                    `<div class="code-label">${escapeHtml(lang.toUpperCase())} CODE</div><pre class="code-block">${escapeHtml(code)}</pre>`
+                );
+                lastIndex = codeBlockRegex.lastIndex;
+            }
+            // Add remaining text after last code block
+            if (lastIndex < content.length) {
+                htmlParts.push(escapeHtml(content.substring(lastIndex)));
+            }
+
+            return htmlParts.join('');
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function renderHistory() {
             chatHistory.innerHTML = '';
             history.forEach(msg => {
@@ -67,7 +126,12 @@
                 div.className = 'msg ' + msg.role;
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
-                bubble.textContent = msg.content;
+
+                if (msg.role === 'ai') {
+                    bubble.innerHTML = renderMsgContent(msg.content);
+                } else {
+                    bubble.textContent = msg.content;
+                }
                 div.appendChild(bubble);
                 chatHistory.appendChild(div);
             });
