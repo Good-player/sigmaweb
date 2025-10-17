@@ -386,8 +386,13 @@
             let urlRegex = /(https?:\/\/[^\s]+)/g;
             htmlParts = htmlParts.map(part =>
                 part.replace(urlRegex, url => {
-                    if (url.includes('youtube.com')) {
-                        return `<div class="ref-card"><img src="https://www.youtube.com/s/desktop/0057e8c8/img/favicon.ico" style="height:20px;vertical-align:middle;margin-right:6px;"> <a href="${url}" target="_blank" style="color:#FF0000;font-weight:bold;">YouTube</a></div>`;
+                    try {
+                        const { hostname } = new URL(url);
+                        if (hostname === 'youtube.com' || hostname === 'www.youtube.com') {
+                            return `<div class="ref-card"><img src="https://www.youtube.com/s/desktop/0057e8c8/img/favicon.ico" style="height:20px;vertical-align:middle;margin-right:6px;"> <a href="${url}" target="_blank" style="color:#FF0000;font-weight:bold;">YouTube</a></div>`;
+                        }
+                    } catch (e) {
+                        // If parsing fails, fallback to generic card
                     }
                     // Add more sites/logos as needed
                     return `<div class="ref-card"><a href="${url}" target="_blank">${url}</a></div>`;
