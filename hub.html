@@ -21,7 +21,7 @@
             text-decoration: none;
             color: inherit;
         }
-        /* Poster Side Panels */
+
         .poster-side {
             position: fixed;
             top: 0;
@@ -63,13 +63,17 @@
             color: #005eff;
         }
         .poster-side-img {
-            height: 60vh;
+            max-height: 60vh;
+            max-width: 180px;
+            min-width: 80px;
             width: auto;
+            height: auto;
             border-radius: 14px;
             box-shadow: 0 2px 15px rgba(0,0,0,0.16);
             background: #fff;
             margin: 0 8px;
-            max-width: 180px;
+            object-fit: contain;
+            aspect-ratio: auto;
             opacity: 1;
             pointer-events: all;
             transition: opacity 0.4s, margin 0.4s;
@@ -82,14 +86,11 @@
         }
         .poster-side.left { left: 0; }
         .poster-side.right { right: 0; }
-        /* Ensure toggle button sticks at edge when collapsed */
         .poster-side.left.collapsed { left: 0; }
         .poster-side.right.collapsed { right: 0; }
-        /* Responsive for mobile */
         @media (max-width: 600px) {
             .poster-side-img { display: none !important; }
         }
-        /* Header Section */
         .poster-container {
             display: flex;
             justify-content: center;
@@ -109,7 +110,6 @@
             transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
-        /* Main Content */
         .content {
             max-width: 1200px;
             margin: 40px auto;
@@ -121,7 +121,6 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        /* Buttons */
         .bubbly-button {
             font-family: 'Inter', sans-serif;
             display: inline-block;
@@ -143,7 +142,6 @@
             background: linear-gradient(135deg, #005eff, #00aaff);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
-        /* Descriptions */
         .description {
             font-size: 1em;
             color: #555;
@@ -153,7 +151,6 @@
             margin-left: auto;
             margin-right: auto;
         }
-        /* Card Layouts */
         .card {
             background: #fff;
             border-radius: 10px;
@@ -174,7 +171,6 @@
             font-size: 1em;
             color: #666;
         }
-        /* Footer */
         .update-log {
             margin-top: 40px;
             padding: 20px;
