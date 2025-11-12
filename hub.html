@@ -7,7 +7,6 @@
     <link rel="icon" href="pic/icon.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Global Styles */
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
@@ -15,16 +14,81 @@
             background: #f4f4f6;
             color: #333;
         }
-
         h1, h2 {
             color: #111;
         }
-
         a {
             text-decoration: none;
             color: inherit;
         }
-
+        /* Poster Side Panels */
+        .poster-side {
+            position: fixed;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            z-index: 2000;
+            pointer-events: none;
+        }
+        .poster-side.left {
+            left: 0;
+            flex-direction: row;
+        }
+        .poster-side.right {
+            right: 0;
+            flex-direction: row-reverse;
+        }
+        .poster-toggle-btn {
+            background: rgba(255,255,255,0.82);
+            border: none;
+            border-radius: 100vw;
+            width: 36px;
+            height: 48px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #007aff;
+            outline: none;
+            margin: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            pointer-events: all;
+            transition: background 0.15s, color 0.15s;
+        }
+        .poster-toggle-btn:hover {
+            background: #007aff18;
+            color: #005eff;
+        }
+        .poster-side-img {
+            height: 60vh;
+            width: auto;
+            border-radius: 14px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.16);
+            background: #fff;
+            margin: 0 8px;
+            max-width: 180px;
+            opacity: 1;
+            pointer-events: all;
+            transition: opacity 0.4s, margin 0.4s;
+        }
+        .poster-side.collapsed .poster-side-img {
+            opacity: 0;
+            pointer-events: none;
+            margin-left: -120px;
+            margin-right: -120px;
+        }
+        .poster-side.left { left: 0; }
+        .poster-side.right { right: 0; }
+        /* Ensure toggle button sticks at edge when collapsed */
+        .poster-side.left.collapsed { left: 0; }
+        .poster-side.right.collapsed { right: 0; }
+        /* Responsive for mobile */
+        @media (max-width: 600px) {
+            .poster-side-img { display: none !important; }
+        }
         /* Header Section */
         .poster-container {
             display: flex;
@@ -34,7 +98,6 @@
             padding: 50px 20px;
             text-align: center;
         }
-
         .poster-container img {
             max-width: 100%;
             border-radius: 10px;
@@ -42,26 +105,22 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
         .poster-container img:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
-
         /* Main Content */
         .content {
             max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
         }
-
         .content h1 {
             font-size: 2.5em;
             font-weight: 700;
             text-align: center;
             margin-bottom: 20px;
         }
-
         /* Buttons */
         .bubbly-button {
             font-family: 'Inter', sans-serif;
@@ -79,13 +138,11 @@
             transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-
         .bubbly-button:hover {
             transform: translateY(-3px);
             background: linear-gradient(135deg, #005eff, #00aaff);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
-
         /* Descriptions */
         .description {
             font-size: 1em;
@@ -96,7 +153,6 @@
             margin-left: auto;
             margin-right: auto;
         }
-
         /* Card Layouts */
         .card {
             background: #fff;
@@ -106,22 +162,18 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
-
         .card h2 {
             font-size: 1.5em;
             margin-bottom: 10px;
         }
-
         .card p {
             font-size: 1em;
             color: #666;
         }
-
         /* Footer */
         .update-log {
             margin-top: 40px;
@@ -131,11 +183,9 @@
             border-radius: 10px;
             text-align: center;
         }
-
         .update-log h2 {
             margin-bottom: 20px;
         }
-
         .update-log pre {
             background: rgba(255, 255, 255, 0.2);
             padding: 15px;
@@ -146,6 +196,16 @@
     </style>
 </head>
 <body>
+    <!-- Expandable/Collapsible Side Posters -->
+    <div class="poster-side left" id="leftPosterSide">
+        <button id="toggleLeftPoster" class="poster-toggle-btn" aria-label="Collapse Left Poster">&lt;</button>
+        <img id="posterLeftImg" class="poster-side-img" src="picture/poster-left.jpg" alt="Left Poster">
+    </div>
+    <div class="poster-side right" id="rightPosterSide">
+        <button id="toggleRightPoster" class="poster-toggle-btn" aria-label="Collapse Right Poster">&gt;</button>
+        <img id="posterRightImg" class="poster-side-img" src="picture/poster-right.jpg" alt="Right Poster">
+    </div>
+
     <div class="poster-container">
         <img src="poster.jpg" alt="Poster" onclick="location.href='index.html'">
     </div>
@@ -156,78 +216,63 @@
             <button class="bubbly-button" onclick="window.open('https://good-player.github.io/sigmaweb-pro/pp.html', '_blank')">Privacy policy</button>
             <p class="description">Privacy policy. Read berfore use. Definetly good policy.(?)</p>
         </div>
-        
         <div class="card">
             <button class="bubbly-button" onclick="location.href='index.html'">Main menu</button>
             <p class="description">Rage quit/Logout</p>
         </div>
-        
         <div class="card">
             <button class="bubbly-button" onclick="location.href='hubdev.html'">Developers hub</button>
             <p class="description">Completely not done things will be on here. And this site background is bad. idc tbh</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="window.open('https://discord.gg/smnUbgZ22G', '_blank')">DISCORD</button>
             <p class="description">Our official discord chat.</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="window.open('https://github.com/Good-player/sigmaweb/pulls', '_blank')">Pulls</button>
             <p class="description">If you need to fix some bugs (tbh no) or submit what do you want. Click the button and pull a request. (Ex:Feedback)</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='money.html'">Money Clicker Game</button>
             <p class="description">a clicker game</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='scam.html'">Fake VBUCKS/ROBUX Getter</button>
             <p class="description">Working omg free robux/vbucks. *jk</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='stock.html'">sigma invest GAME</button>
             <p class="description">ONLY SIGMA RICH INVESTOR GUY ONLY!!!!!</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="window.open('https://sites.google.com/edu.sollentuna.se/kilofilm', '_blank')">KiloFilm</button>
             <p class="description">A website that my friend created. Is just a playing film website. A film about a trailer.</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='flappybird/flappybird.html'">Flappy block (broke)</button>
             <p class="description">Flappy bird from wish (block edition and broke)</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='buggy.html'">Random picture generator</button>
             <p class="description">Totaly waste of time of doing this.</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='cmd.html'">Command line</button>
             <p class="description">cmd.exe</p>
         </div>
-        
         <div class="card">
             <button class="bubbly-button" onclick="location.href='aipublic.html'">Claude it so skibidi ai</button>
             <p class="description">Person who have permmision can view.</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="location.href='py.html'">Python editor</button>
             <p class="description">Yes. it python. (beta)</p>
         </div>
-
         <div class="card">
             <button class="bubbly-button" onclick="window.open('https://sigmaweb-pro.pages.dev/', '_blank')">Sigmaweb PRO</button>
             <p class="description">Sigmaweb Pro Edition. (On dev)</p>
         </div>
     </div>
-
     <div class="update-log" id="updateLog">
         <h2>Update Log</h2>
         <pre id="logContent">Loading...</pre>
@@ -243,6 +288,26 @@
                 document.getElementById('logContent').textContent = 'Error loading update log.';
                 console.error('Error fetching update log:', error);
             });
+
+        // Expand/collapse poster JavaScript
+        const left = document.getElementById('leftPosterSide');
+        const leftBtn = document.getElementById('toggleLeftPoster');
+        let leftCollapsed = false;
+        leftBtn.addEventListener('click', () => {
+            leftCollapsed = !leftCollapsed;
+            left.classList.toggle('collapsed', leftCollapsed);
+            leftBtn.innerHTML = leftCollapsed ? '&gt;' : '&lt;';
+            leftBtn.setAttribute('aria-label', leftCollapsed ? "Expand Left Poster" : "Collapse Left Poster");
+        });
+        const right = document.getElementById('rightPosterSide');
+        const rightBtn = document.getElementById('toggleRightPoster');
+        let rightCollapsed = false;
+        rightBtn.addEventListener('click', () => {
+            rightCollapsed = !rightCollapsed;
+            right.classList.toggle('collapsed', rightCollapsed);
+            rightBtn.innerHTML = rightCollapsed ? '&lt;' : '&gt;';
+            rightBtn.setAttribute('aria-label', rightCollapsed ? "Expand Right Poster" : "Collapse Right Poster");
+        });
     </script>
 </body>
 </html>
