@@ -4,165 +4,589 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flappy Block</title>
-    <style>
+    <style
+        :root {
+            --bg-dark: #1e272e;
+            --panel-bg: #2f3640;>
+            --canvas-bg: #353b48;
+            --accent: #0984e3;
+            --text-main: #dfe6e9;
+            --warning: #e17055;
+            --font-stack: 'Segoe UI', sans-serif;
+        }
+
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            margin: 0; padding: 10px;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-stack);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; user-select: none; overflow: hidden;
         }
-        canvas {
-            border: 1px solid #000;
+
+        h1 { margin: 0 0 10px 0; font-size: 20px; font-weight: 900; letter-spacing: 2px; }
+
+        /* GAME CONTAINER */
+        #game-wrapper {
+            position: relative;
+            width: 320px; height: 480px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            overflow: hidden;
+            background: var(--canvas-bg);
+            border: 2px solid var(--panel-bg);
+            transition: transform 0.2s;
         }
-        #backButton {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
+
+        canvas { display: block; background-color: var(--canvas-bg); }
+
+        /* LAYERS */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 20;
+            display: flex; justify-content: center; align-items: center;
         }
-        #backButton:hover {
-            background-color: #0056b3;
+
+        .screen {
+            background: rgba(30, 39, 46, 0.98);
+            padding: 25px; width: 85%; border-radius: 8px;
+            text-align: center; pointer-events: auto; display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 20px;
-            color: #000;
+        .screen.active { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+        /* REPLAY CONTROLS */
+        #replay-ui {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(20, 20, 20, 0.95); padding: 10px; box-sizing: border-box;
+            border-top: 1px solid #444; display: none; pointer-events: auto; z-index: 30;
         }
-        #ranking {
-            position: absolute;
-            left: 10px;
-            top: 50px;
-            width: 250px;
-            background-color: #fff;
-            border: 1px solid #000;
-            padding: 10px;
-            overflow-y: auto;
-            max-height: 80vh;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        #replay-ui.active { display: flex; flex-direction: column; gap: 8px; }
+
+        .replay-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #555; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+
+        .r-btn {
+            background: #333; color: #ccc; border: 1px solid #555;
+            padding: 4px 8px; font-size: 10px; border-radius: 4px; cursor: pointer;
         }
-        #ranking h3 {
-            margin-top: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .r-btn:hover { background: #444; }
+        .r-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* HUD */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            display: flex; justify-content: space-between; pointer-events: none; z-index: 10;
         }
-        .rank-item {
-            border-bottom: 1px solid #ccc;
-            padding: 8px 0;
-            display: flex;
-            flex-direction: column;
+        #score-display { font-size: 36px; font-weight: 900; text-shadow: 2px 2px 0 #000; }
+        
+        #challenge-list {
+            text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
         }
-        .rank-item button {
-            margin-left: 5px;
+        .c-tag {
+            font-size: 11px; background: rgba(0,0,0,0.6); padding: 3px 8px;
+            border-radius: 3px; color: #fab1a0; border-right: 3px solid #e17055;
+            font-weight: bold; text-transform: uppercase;
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .rank-item div {
-            display: flex;
-            justify-content: space-between;
+        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        #challenge-banner {
+            position: absolute; top: 30%; width: 100%; text-align: center;
+            font-size: 28px; font-weight: 900; color: var(--warning);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8); pointer-events: none;
+            transform: scale(0); opacity: 0; transition: 0.2s; z-index: 15;
         }
-        .rank-item span[contenteditable] {
-            border-bottom: 1px dotted #000;
-            cursor: text;
+        #challenge-banner.pop { transform: scale(1.2); opacity: 1; }
+
+        button.main-btn {
+            background: var(--accent); color: white; border: none;
+            padding: 10px 20px; font-size: 16px; font-weight: 700;
+            cursor: pointer; border-radius: 4px; width: 100%;
         }
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+        button.main-btn:hover { filter: brightness(1.1); }
+
+        select {
+            background: #444; color: white; padding: 8px; border: 1px solid #666;
+            border-radius: 4px; width: 100%; margin-bottom: 10px;
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        /* EFFECTS */
+        .spotlight-mask {
+            mask-image: radial-gradient(circle 60px at var(--x) var(--y), black 0%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle 60px at var(--x) var(--y), black 0%, transparent 90%);
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .shake { animation: shake 0.5s infinite; }
+        @keyframes shake { 
+            0% { transform: translate(1px, 1px) rotate(0deg); } 
+            25% { transform: translate(-1px, -2px) rotate(-1deg); }
+            50% { transform: translate(-2px, 1px) rotate(1deg); } 
+            75% { transform: translate(2px, 1px) rotate(-1deg); }
+            100% { transform: translate(1px, -1px) rotate(0deg); } 
         }
-        .modal-header h2 {
-            margin: 0;
-        }
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-        }
-        #gameOver {
-            font-size: 30px;
-            color: red;
-            text-align: center;
-            display: none;
-        }
-        #victoryMessage {
-            font-size: 30px;
-            color: green;
-            text-align: center;
-            display: none;
-        }
+        .tilt-screen { transform: rotate(5deg) scale(0.9); }
+
+        #history-panel { width: 320px; margin-top: 10px; background: #222; border: 1px solid #444; max-height: 150px; overflow-y: auto; font-size: 12px; }
+        .history-item { padding: 8px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
-    <div id="ranking">
-        <h3>
-            Ranking
-            <button onclick="clearAllRecords()">Clear All</button>
-        </h3>
-        <div id="rankingList"></div>
-    </div>
-    <div style="position: relative;">
+
+    <h1>FLAPPY BLOCK</h1>
+
+    <div id="game-wrapper">
+        <div id="hud">
+            <div id="score-display">0</div>
+            <div id="challenge-list"></div>
+        </div>
+        
+        <div id="challenge-banner">CHALLENGE!</div>
         <canvas id="gameCanvas" width="320" height="480"></canvas>
-        <div id="score">Score: 0</div>
-    </div>
-    <a id="backButton" href="https://good-player.github.io/sigmaweb/hub.html">Back to Hub</a>
 
-    <!-- Modal for details -->
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Details</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
+        <div id="replay-ui">
+            <div class="replay-row">
+                <input type="range" id="timeline" min="0" value="0" oninput="scrubReplay(this.value)">
             </div>
-            <div id="modalBody"></div>
+            <div class="replay-row" style="margin-top: 5px;">
+                <div style="color: #aaa; font-size: 10px;"><span id="fr-curr">0</span> / <span id="fr-tot">0</span></div>
+                <div style="display: flex; gap: 4px;">
+                    <button class="r-btn" id="btn-pause" onclick="togglePause()">❚❚</button>
+                    <button class="r-btn" onclick="exitReplay()" style="color:#e17055">EXIT</button>
+                </div>
+            </div>
+            <div class="replay-row">
+                <div style="font-size:10px; color:#666;">REPLAY SPEED:</div>
+                <div style="display: flex; gap: 2px;">
+                    <button class="r-btn" id="spd-1" onclick="setReplaySpeed(1)">1x</button>
+                    <button class="r-btn" id="spd-2" onclick="setReplaySpeed(2)">2x</button>
+                    <button class="r-btn" id="spd-5" onclick="setReplaySpeed(5)">5x</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="ui-layer">
+            <div id="start-screen" class="screen active">
+                <h2 style="margin:0; color:white;">START GAME</h2>
+                
+                <div style="width:100%; text-align:left; margin-top:10px;">
+                    <label style="font-size:10px; color:#aaa;">GAME SPEED</label>
+                    <select id="base-speed-select">
+                        <option value="0.8">0.8x (Slow)</option>
+                        <option value="1.0" selected>1.0x (Normal)</option>
+                        <option value="1.5">1.5x (Fast)</option>
+                        <option value="2.0">2.0x (Insane)</option>
+                    </select>
+                </div>
+
+                <button class="main-btn" onclick="startGame()">PLAY</button>
+            </div>
+
+            <div id="game-over-screen" class="screen">
+                <h2 style="margin:0; color:#e17055;">GAME OVER</h2>
+                <div style="font-size:48px; font-weight:900; color:white;" id="final-score">0</div>
+                <div id="save-msg" style="font-size:12px; margin-bottom:10px;"></div>
+                <button class="main-btn" onclick="resetGame()">RETRY</button>
+                <button class="r-btn" onclick="showStartScreen()" style="margin-top:5px; width:100%; background:transparent;">MENU</button>
+            </div>
         </div>
     </div>
 
-    <!-- Modal for replay -->
-    <div id="replayModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Replay</h2>
-                <span class="close" onclick="closeReplayModal()">&times;</span>
-            </div>
-            <canvas id="replayCanvas" width="320" height="480"></canvas>
-            <div id="gameOver">GAME OVER</div>
-            <div id="victoryMessage">YOU WIN!!!1!1111?+1++1+1+</div>
-        </div>
+    <div id="history-panel">
+        <div style="padding:5px; background:#333; color:#aaa; font-weight:bold;">REPLAY HISTORY</div>
+        <div id="history-list"></div>
     </div>
 
-    <script src="flappybird.js"></script>
-    <script src="flappylevel.js"></script>
+    <script>
+        // --- UTILITIES ---
+        function mulberry32(a) {
+            return function() {
+                var t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1);
+                t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); if(audioCtx.state==='suspended') audioCtx.resume(); }
+        const tone = (f, t, l=0.1) => {
+            if(!audioCtx) return;
+            const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+            o.type=t; o.frequency.value=f; g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+l);
+            o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+l);
+        };
+
+        // --- MUTATORS ---
+        const MUTATORS = [
+            { id: 'grav_h', name: "HEAVY BOOTS", func: (p) => p.gravity += 0.15 },
+            { id: 'tiny',   name: "TINY PLAYER", func: (p) => p.size = 12 },
+            { id: 'gap',    name: "TIGHT SQUEEZE", func: (p) => p.gap = Math.max(75, p.gap - 20) },
+            { id: 'fast',   name: "SPEED UP", func: (p) => p.speedMultiplier += 0.3 },
+            { id: 'invert', name: "INVERTED", func: (p) => { p.invert = true; p.gravity = -0.25; p.y = 300; } },
+            { id: 'shake',  name: "EARTHQUAKE", visual: 'shake' },
+            { id: 'tilt',   name: "DIZZY MODE", visual: 'tilt-screen' },
+            { id: 'dark',   name: "DARKNESS", visual: 'darkness' } 
+        ];
+
+        // --- GAME VARIABLES ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('game-wrapper');
+
+        let gameState = {
+            running: false,
+            replaying: false,
+            paused: false,
+            frames: 0,
+            score: 0,
+            seed: 0,
+            rng: null,
+            inputs: [],
+            baseSpeed: 1.0,
+            replaySpeed: 1,
+            activeMutators: [] 
+        };
+
+        let phys = {};
+        let entities = { player: {}, pipes: [] };
+
+        // Initialize a Run (Live or Replay)
+        function initRun(seed, speedVal) {
+            gameState.frames = 0;
+            gameState.score = 0;
+            gameState.seed = seed || Math.floor(Math.random()*1000000);
+            gameState.rng = mulberry32(gameState.seed);
+            gameState.baseSpeed = parseFloat(speedVal);
+            gameState.activeMutators = [];
+            
+            if(!gameState.replaying) gameState.inputs = [];
+
+            phys = {
+                gravity: 0.25,
+                jump: 4.5,
+                size: 20,
+                gap: 115,
+                speedMultiplier: 1.0,
+                invert: false,
+                visuals: [] 
+            };
+
+            entities.player = { x: 50, y: 150, dy: 0 };
+            entities.pipes = [];
+
+            wrapper.className = ''; 
+            updateHUD(true);
+        }
+
+        function applyMutator(simOnly) {
+            const r = gameState.rng();
+            const pick = MUTATORS[Math.floor(r * MUTATORS.length)];
+            
+            if(pick.func) pick.func(phys);
+            
+            if(pick.visual && !phys.visuals.includes(pick.visual)) {
+                phys.visuals.push(pick.visual);
+                if(!simOnly) wrapper.classList.add(pick.visual);
+            }
+
+            if(!simOnly) {
+                gameState.activeMutators.push(pick.name);
+                updateHUD();
+                showBanner(pick.name);
+                tone(100, 'sawtooth', 0.3);
+            }
+        }
+
+        function updatePhysics(inputActive) {
+            // --- PLAYER ---
+            let gravityForce = phys.gravity;
+            let jumpForce = phys.jump;
+
+            if (inputActive) {
+                if (phys.invert) entities.player.dy = jumpForce; 
+                else entities.player.dy = -jumpForce; 
+            }
+
+            entities.player.dy += gravityForce;
+            entities.player.y += entities.player.dy;
+
+            if (entities.player.y > 480 - phys.size || entities.player.y < 0) return true;
+
+            // --- PIPES ---
+            // Base movement is 2px/frame at 1.0x. 
+            // At 2.0x base speed, it's 4px/frame.
+            const currentSpeed = 2 * gameState.baseSpeed * phys.speedMultiplier;
+            
+            // Spawn rate decreases as speed increases to keep gap distance consistent
+            const spawnRate = Math.floor(200 / currentSpeed); 
+
+            if (gameState.frames > 0 && gameState.frames % spawnRate === 0) {
+                let r = gameState.rng();
+                let safeZone = 50;
+                let maxTop = 480 - phys.gap - safeZone;
+                let top = Math.floor(r * (maxTop - safeZone + 1) + safeZone);
+                entities.pipes.push({ x: 320, top: top, passed: false });
+            }
+
+            for (let i = 0; i < entities.pipes.length; i++) {
+                let p = entities.pipes[i];
+                p.x -= currentSpeed;
+
+                // Collision
+                if (entities.player.x + phys.size > p.x && entities.player.x < p.x + 40) {
+                    if (entities.player.y < p.top) return true;
+                    if (entities.player.y + phys.size > p.top + phys.gap) return true;
+                }
+
+                // Score
+                if (p.x + 40 < entities.player.x && !p.passed) {
+                    gameState.score++;
+                    p.passed = true;
+                    
+                    // Apply Chaos every 10 points
+                    if(gameState.score > 0 && gameState.score % 10 === 0) {
+                        applyMutator(false); 
+                    }
+                }
+
+                if (p.x + 40 < 0) { entities.pipes.shift(); i--; }
+            }
+            return false;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, 320, 480);
+
+            // Darkness
+            if(phys.visuals.includes('darkness')) {
+                ctx.fillStyle = "#000";
+                ctx.fillRect(0,0,320,480);
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(entities.player.x + phys.size/2, entities.player.y + phys.size/2, 80, 0, Math.PI*2);
+                ctx.fill();
+                ctx.globalCompositeOperation = 'source-over';
+            }
+
+            // Pipes
+            ctx.fillStyle = "#e17055";
+            entities.pipes.forEach(p => {
+                ctx.fillRect(p.x, 0, 40, p.top); // Top
+                let bottomY = p.top + phys.gap;
+                ctx.fillRect(p.x, bottomY, 40, 480 - bottomY); // Bottom
+            });
+
+            // Player
+            ctx.fillStyle = "#0984e3";
+            ctx.fillRect(entities.player.x, entities.player.y, phys.size, phys.size);
+        }
+
+        // --- GAME LOOP ---
+        let animId;
+        function loop() {
+            if (!gameState.running) return;
+
+            if (gameState.replaying && gameState.paused) {
+                animId = requestAnimationFrame(loop); return;
+            }
+
+            let steps = gameState.replaying ? gameState.replaySpeed : 1;
+
+            for(let s=0; s<steps; s++) {
+                let inputThisFrame = false;
+
+                if (gameState.replaying) {
+                    if(gameState.inputs.includes(gameState.frames)) inputThisFrame = true;
+                    
+                    // UI Updates inside loop logic for timeline
+                    document.getElementById('timeline').value = gameState.frames;
+                    document.getElementById('fr-curr').innerText = gameState.frames;
+
+                    if(gameState.frames >= gameState.totalFrames) {
+                        gameState.paused = true; updatePlayPause(); break; 
+                    }
+                } else {
+                    if(liveInputTriggered) {
+                        inputThisFrame = true;
+                        gameState.inputs.push(gameState.frames);
+                        liveInputTriggered = false;
+                        tone(300, 'square');
+                    }
+                }
+
+                const crashed = updatePhysics(inputThisFrame);
+                gameState.frames++;
+
+                if(crashed) {
+                    if(gameState.replaying) {
+                        gameState.paused = true; updatePlayPause();
+                    } else {
+                        gameOver();
+                    }
+                    break;
+                }
+            }
+            
+            // IMPORTANT: Update Score UI here, so it works for both live and replay
+            updateScoreUI();
+            draw();
+            animId = requestAnimationFrame(loop);
+        }
+
+        // --- INPUT ---
+        let liveInputTriggered = false;
+        function handleInput(e) {
+            if (e.type === 'keydown' && e.code === 'Space') e.preventDefault();
+            if (gameState.replaying) return;
+            
+            if (gameState.running) {
+                liveInputTriggered = true;
+            } else if (document.getElementById('start-screen').classList.contains('active')) {
+                startGame();
+            } else if (document.getElementById('game-over-screen').classList.contains('active')) {
+                resetGame();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => { if(e.code==='Space') handleInput(e); });
+        canvas.addEventListener('mousedown', handleInput);
+
+        // --- UI LOGIC ---
+        function startGame() {
+            const speed = document.getElementById('base-speed-select').value;
+            initRun(null, speed);
+            gameState.running = true;
+            gameState.replaying = false;
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            document.getElementById('challenge-banner').classList.remove('pop');
+            document.getElementById('replay-ui').classList.remove('active');
+            initAudio();
+            loop();
+        }
+
+        function gameOver() {
+            gameState.running = false;
+            cancelAnimationFrame(animId);
+            tone(100, 'sawtooth', 0.4);
+            document.getElementById('game-over-screen').classList.add('active');
+            document.getElementById('final-score').innerText = gameState.score;
+
+            if(gameState.score > 5) {
+                saveRun();
+                document.getElementById('save-msg').innerText = "RUN SAVED!";
+                document.getElementById('save-msg').style.color = "#00b894";
+            } else {
+                document.getElementById('save-msg').innerText = "Score too low to save.";
+                document.getElementById('save-msg').style.color = "#aaa";
+            }
+        }
+
+        function resetGame() { startGame(); }
+        function showStartScreen() {
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            document.getElementById('start-screen').classList.add('active');
+        }
+
+        function updateHUD(clear=false) {
+            if(clear) {
+                document.getElementById('challenge-list').innerHTML = '';
+                document.getElementById('score-display').innerText = '0';
+                return;
+            }
+            const list = document.getElementById('challenge-list');
+            list.innerHTML = ''; 
+            gameState.activeMutators.slice(-5).forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'c-tag'; div.innerText = m;
+                list.appendChild(div);
+            });
+        }
+        function updateScoreUI() { document.getElementById('score-display').innerText = gameState.score; }
+        function showBanner(txt) {
+            const b = document.getElementById('challenge-banner');
+            b.innerText = txt; b.classList.add('pop');
+            setTimeout(()=>b.classList.remove('pop'), 1500);
+        }
+
+        // --- REPLAY LOGIC ---
+        function watchReplay(id) {
+            const history = getHistory();
+            const run = history.find(r=>r.id===id);
+            if(!run) return;
+
+            gameState.running = true; gameState.replaying = true; gameState.paused = false;
+            gameState.replaySpeed = 1; gameState.totalFrames = run.frames;
+
+            initRun(run.seed, run.speed || 1.0);
+            gameState.inputs = run.inputs;
+
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            document.getElementById('replay-ui').classList.add('active');
+            updatePlayPause();
+            
+            const tl = document.getElementById('timeline');
+            tl.max = run.frames; tl.value = 0;
+            document.getElementById('fr-tot').innerText = run.frames;
+
+            initAudio();
+            loop();
+        }
+
+        function scrubReplay(val) {
+            if(!gameState.replaying) return;
+            gameState.paused = true; updatePlayPause();
+            const target = parseInt(val);
+
+            const savedInputs = gameState.inputs;
+            const savedTotal = gameState.totalFrames;
+            initRun(gameState.seed, gameState.baseSpeed);
+            gameState.inputs = savedInputs;
+            gameState.totalFrames = savedTotal;
+            gameState.replaying = true;
+
+            while(gameState.frames < target) {
+                let hasInput = gameState.inputs.includes(gameState.frames);
+                updatePhysics(hasInput);
+                gameState.frames++;
+            }
+            updateScoreUI(); // Ensure score updates after dragging
+            draw();
+        }
+
+        function setReplaySpeed(s) {
+            gameState.replaySpeed = s;
+            [1,2,5].forEach(n => document.getElementById('spd-'+n).classList.remove('active'));
+            document.getElementById('spd-'+s).classList.add('active');
+        }
+        function togglePause() { gameState.paused = !gameState.paused; updatePlayPause(); }
+        function updatePlayPause() { document.getElementById('btn-pause').innerText = gameState.paused ? "▶" : "❚❚"; }
+        function exitReplay() { gameState.running = false; cancelAnimationFrame(animId); document.getElementById('replay-ui').classList.remove('active'); showStartScreen(); wrapper.className = ''; }
+
+        // --- STORAGE ---
+        const DB_KEY = 'flappy_chaos_final';
+        function getHistory() { try { return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); } catch{return[];} }
+        function saveRun() {
+            const h = getHistory();
+            h.unshift({ 
+                id: Date.now(), score: gameState.score, seed: gameState.seed, 
+                inputs: gameState.inputs, frames: gameState.frames, speed: gameState.baseSpeed
+            });
+            if(h.length>10) h.pop();
+            localStorage.setItem(DB_KEY, JSON.stringify(h));
+            renderList();
+        }
+        function renderList() {
+            const l = document.getElementById('history-list'); l.innerHTML='';
+            getHistory().forEach(r => {
+                const el = document.createElement('div'); el.className='history-item';
+                el.innerHTML = `<span><b>${r.score}</b> pts <small>(${r.speed}x)</small></span> <button class="r-btn" onclick="watchReplay(${r.id})">PLAY</button>`;
+                l.appendChild(el);
+            });
+        }
+        renderList();
+    </script>
 </body>
 </html>
