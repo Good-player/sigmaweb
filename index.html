@@ -436,6 +436,10 @@
       if (!window.grecaptcha || grecaptcha.getResponse().length === 0) {
         event.preventDefault();
         window.location.href = 'robotalert.html';
+      } else {
+        // Set session on successful recaptcha completion
+        sessionStorage.setItem('recaptcha_verified', 'true');
+        sessionStorage.setItem('session_timestamp', Date.now().toString());
       }
     });
 
