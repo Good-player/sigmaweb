@@ -7,5 +7,42 @@
 	<h1>Access Denied</h1>
 	<div>This is not open yet, Come back soon and check. It on blog also!</div>
 	<button onclick="location.href='hub.html'">Back to Hub</button>
+	<script>
+		// Session timeout and tab exit detection
+		(function() {
+			const TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
+			function updateActivity() {
+				sessionStorage.setItem('last_activity', Date.now().toString());
+			}
+
+			function checkTimeout() {
+				const lastActivity = sessionStorage.getItem('last_activity');
+				if (!lastActivity || Date.now() - parseInt(lastActivity) > TIMEOUT_MS) {
+					sessionStorage.clear();
+					window.location.href = 'exp.html';
+				}
+			}
+
+			// Initialize last activity
+			updateActivity();
+
+			// Update activity on user interactions
+			['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(function(event) {
+				document.addEventListener(event, updateActivity);
+			});
+
+			// Check timeout every minute
+			setInterval(checkTimeout, 60000);
+
+			// Clear session when tab is hidden/exited
+			document.addEventListener('visibilitychange', function() {
+				if (document.hidden) {
+					sessionStorage.clear();
+					window.location.href = 'exp.html';
+				}
+			});
+		})();
+	</script>
 </body>
 </html>
