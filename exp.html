@@ -1,1 +1,44 @@
-sesssion expired. please try to do verifycation again.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Expired</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 90%;
+            width: 500px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Session Expired</h1>
+        <p>Your session has expired or you don't have a valid reCAPTCHA verification.</p>
+        <p>Please complete the verification again to access this website.</p>
+        <button onclick="window.location.href='index.html'">Go back to verification page</button>
+    </div>
+</body>
+</html>
